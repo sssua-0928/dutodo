@@ -288,6 +288,26 @@
 
   .cat-add-btn:hover { background: var(--border); color: var(--text); }
 
+  .cat-menu-btn {
+    width: 26px;
+    height: 26px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    flex-shrink: 0;
+    opacity: 0;
+  }
+
+  .cat-header:hover .cat-menu-btn { opacity: 1; }
+  .cat-menu-btn:hover { background: var(--bg); color: var(--text-sub); }
+
   .cat-body { padding: 0 12px 12px; }
 
   /* ── Subcategory ── */
@@ -416,6 +436,11 @@
 
   .todo-item:hover { background: var(--bg); }
   .todo-item:hover .todo-menu-btn { opacity: 1; }
+  .todo-item[draggable="true"] { cursor: grab; }
+  .todo-item.dragging { opacity: 0.4; }
+
+  .cat-body.drag-over { background: rgba(0,0,0,0.03); border-radius: var(--radius-sm); }
+  .subcat-todos.drag-over { background: rgba(0,0,0,0.03); border-radius: var(--radius-sm); }
 
   .todo-check {
     width: 22px;
@@ -895,6 +920,12 @@
   <div class="ctx-menu-item danger" id="subcat-ctx-delete">🗑 삭제</div>
 </div>
 
+<!-- Context Menu (Category) -->
+<div class="ctx-menu" id="cat-ctx-menu">
+  <div class="ctx-menu-item" id="cat-ctx-edit">✏️ 수정</div>
+  <div class="ctx-menu-item danger" id="cat-ctx-delete">🗑 삭제</div>
+</div>
+
 <!-- Add Category Modal -->
 <div class="modal-overlay" id="cat-modal">
   <div class="modal">
@@ -939,7 +970,7 @@
     </div>
     <div class="form-group">
       <label class="form-label">예정 시간</label>
-      <input class="form-input" type="time" id="edit-time-input">
+      <select class="form-input" id="edit-time-input"></select>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" id="edit-cancel">취소</button>
@@ -1234,6 +1265,7 @@ function renderTodos() {
       <span class="cat-name">${escHtml(cat.name)}</span>
       <span class="cat-count">${allDone}/${allCatTodos.length}</span>
       <button class="cat-add-btn" data-cat="${cat.id}" data-has-subcats="${hasSubcats}" title="${hasSubcats ? '할일 추가 (서브카테고리 선택)' : '할일 추가'}">+</button>
+      <button class="cat-menu-btn" data-cat="${cat.id}">···</button>
     `;
     card.appendChild(header);
 
@@ -1264,6 +1296,7 @@ function renderTodos() {
         // Subcategory todos
         const subTodoWrap = document.createElement('div');
         subTodoWrap.className = 'subcat-todos';
+        subTodoWrap.dataset.dropCat = sub.id;
         subTodos.forEach(todo => {
           subTodoWrap.appendChild(makeTodoEl(todo, cat));
         });
@@ -1291,6 +1324,7 @@ function renderTodos() {
         body.appendChild(directHeader);
         const directWrap = document.createElement('div');
         directWrap.className = 'subcat-todos';
+        directWrap.dataset.dropCat = cat.id;
         directTodos.forEach(todo => directWrap.appendChild(makeTodoEl(todo, cat)));
         const addForm = makeInlineAddForm(cat.id);
         directWrap.appendChild(addForm);
@@ -1317,6 +1351,7 @@ function renderTodos() {
 
     } else {
       // No subcategories — render todos directly (original behavior)
+      body.dataset.dropCat = cat.id;
       const catTodos = todosForDate
         .filter(t => t.categoryId === cat.id)
         .sort((a, b) => a.order - b.order);
@@ -1357,6 +1392,41 @@ function renderTodos() {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       showInlineAdd(btn.dataset.cat);
+    });
+  });
+
+  // Wire drag & drop on drop zones
+  area.querySelectorAll('[data-drop-cat]').forEach(zone => {
+    const targetCatId = zone.dataset.dropCat;
+    zone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      zone.classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', () => {
+      zone.classList.remove('drag-over');
+    });
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      const todoId = e.dataTransfer.getData('text/plain');
+      const todo = data.todos.find(t => t.id === todoId);
+      if (todo && todo.categoryId !== targetCatId) {
+        todo.categoryId = targetCatId;
+        // Reset order to end
+        const siblings = data.todos.filter(t => t.categoryId === targetCatId && t.date === selectedDate);
+        todo.order = siblings.reduce((m, t) => Math.max(m, t.order), -1) + 1;
+        saveData();
+        renderTodos();
+        renderCalendar();
+      }
+    });
+  });
+
+  // Wire category menu buttons
+  area.querySelectorAll('.cat-menu-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showCatCtxMenu(e, btn.dataset.cat);
     });
   });
 
@@ -1408,6 +1478,16 @@ function makeTodoEl(todo, cat) {
   const item = document.createElement('div');
   item.className = 'todo-item';
   item.dataset.id = todo.id;
+  item.draggable = true;
+
+  item.addEventListener('dragstart', (e) => {
+    e.dataTransfer.setData('text/plain', todo.id);
+    item.classList.add('dragging');
+  });
+  item.addEventListener('dragend', () => {
+    item.classList.remove('dragging');
+    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  });
 
   const checkColor = todo.done ? cat.color : 'transparent';
   const borderColor = todo.done ? cat.color : 'var(--border)';
@@ -1455,7 +1535,7 @@ function makeInlineAddForm(catId) {
         <option value="2h">2시간</option>
         <option value="3h">3시간</option>
       </select>
-      <input type="time" class="time-input" placeholder="예정시간">
+      <select class="time-input time-select"></select>
       <div class="inline-add-actions">
         <button class="btn-cancel">취소</button>
         <button class="btn-save">저장</button>
@@ -1492,7 +1572,7 @@ function showInlineAdd(catId) {
     // Clear
     form.querySelector('.add-text-input').value = '';
     form.querySelector('.duration-select').value = '';
-    form.querySelector('.time-input').value = '';
+    buildTimeOptions(form.querySelector('.time-input'), '');
   }
 }
 
@@ -1620,6 +1700,58 @@ document.addEventListener('click', (e) => {
   if (!document.getElementById('subcat-ctx-menu').contains(e.target)) {
     hideSubcatCtxMenu();
   }
+  if (!document.getElementById('cat-ctx-menu').contains(e.target)) {
+    hideCatCtxMenu();
+  }
+});
+
+// ─── Category Context Menu ───────────────────────────────
+let ctxCatId = null;
+
+function showCatCtxMenu(e, catId) {
+  ctxCatId = catId;
+  const menu = document.getElementById('cat-ctx-menu');
+  menu.classList.add('show');
+  menu.style.left = Math.min(e.clientX, window.innerWidth - 160 - 8) + 'px';
+  menu.style.top = Math.min(e.clientY, window.innerHeight - 80 - 8) + 'px';
+}
+
+function hideCatCtxMenu() {
+  document.getElementById('cat-ctx-menu').classList.remove('show');
+  ctxCatId = null;
+}
+
+document.getElementById('cat-ctx-edit').addEventListener('click', () => {
+  if (!ctxCatId) return;
+  const cat = data.categories.find(c => c.id === ctxCatId);
+  if (!cat) return;
+  // Open edit modal with current values
+  selectedEmoji = cat.icon || EMOJIS[0];
+  selectedColor = cat.color || COLORS[0];
+  editingCatId = ctxCatId;
+  document.getElementById('cat-name-input').value = cat.name;
+  document.getElementById('cat-modal-title').textContent = '카테고리 수정';
+  buildCatModal();
+  document.getElementById('cat-modal').classList.add('show');
+  setTimeout(() => document.getElementById('cat-name-input').focus(), 100);
+  hideCatCtxMenu();
+});
+
+document.getElementById('cat-ctx-delete').addEventListener('click', () => {
+  if (!ctxCatId) return;
+  const cat = data.categories.find(c => c.id === ctxCatId);
+  if (!cat) return;
+  if (confirm(`"${cat.name}" 카테고리와 모든 할일을 삭제할까요?`)) {
+    // Delete subcategories + their todos
+    const subIds = getSubcategories(ctxCatId).map(s => s.id);
+    const allIds = [ctxCatId, ...subIds];
+    data.todos = data.todos.filter(t => !allIds.includes(t.categoryId));
+    data.categories = data.categories.filter(c => !allIds.includes(c.id));
+    saveData();
+    renderTodos();
+    renderCalendar();
+  }
+  hideCatCtxMenu();
 });
 
 // ─── Subcategory Context Menu ────────────────────────────
@@ -1667,7 +1799,7 @@ function showEditModal(id) {
   editingTodoId = id;
   document.getElementById('edit-text-input').value = todo.text;
   document.getElementById('edit-duration-input').value = todo.duration || '';
-  document.getElementById('edit-time-input').value = todo.scheduledTime || '';
+  buildTimeOptions(document.getElementById('edit-time-input'), todo.scheduledTime || '');
   document.getElementById('edit-modal').classList.add('show');
   setTimeout(() => document.getElementById('edit-text-input').focus(), 100);
 }
@@ -1728,6 +1860,7 @@ function buildCatModal() {
 }
 
 document.getElementById('add-cat-btn').addEventListener('click', () => {
+  editingCatId = null;
   selectedEmoji = EMOJIS[0];
   selectedColor = COLORS[0];
   document.getElementById('cat-name-input').value = '';
@@ -1740,15 +1873,28 @@ document.getElementById('add-cat-btn').addEventListener('click', () => {
 document.getElementById('cat-save').addEventListener('click', () => {
   const name = document.getElementById('cat-name-input').value.trim();
   if (!name) return;
-  const maxOrder = data.categories.reduce((m, c) => Math.max(m, c.order), -1);
-  data.categories.push({
-    id: uid(),
-    name,
-    icon: selectedEmoji,
-    color: selectedColor,
-    order: maxOrder + 1,
-    parentId: null
-  });
+
+  if (editingCatId) {
+    // Edit existing category
+    const cat = data.categories.find(c => c.id === editingCatId);
+    if (cat) {
+      cat.name = name;
+      cat.icon = selectedEmoji;
+      cat.color = selectedColor;
+    }
+    editingCatId = null;
+  } else {
+    // Add new category
+    const maxOrder = data.categories.reduce((m, c) => Math.max(m, c.order), -1);
+    data.categories.push({
+      id: uid(),
+      name,
+      icon: selectedEmoji,
+      color: selectedColor,
+      order: maxOrder + 1,
+      parentId: null
+    });
+  }
   saveData();
   document.getElementById('cat-modal').classList.remove('show');
   renderTodos();
@@ -1782,12 +1928,31 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     hideCtxMenu();
     hideSubcatCtxMenu();
+    hideCatCtxMenu();
     document.querySelectorAll('.inline-add.active').forEach(f => f.classList.remove('active'));
     document.querySelectorAll('.subcat-inline-add.active').forEach(f => f.classList.remove('active'));
     document.getElementById('cat-modal').classList.remove('show');
     document.getElementById('edit-modal').classList.remove('show');
   }
 });
+
+// ─── Time Select (15분 단위) ─────────────────────────────
+function buildTimeOptions(selectEl, selectedValue) {
+  selectEl.innerHTML = '<option value="">시간 없음</option>';
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 15) {
+      const val = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+      const ampm = h < 12 ? '오전' : '오후';
+      const hh = h % 12 === 0 ? 12 : h % 12;
+      const label = `${ampm} ${hh}:${String(m).padStart(2,'0')}`;
+      const opt = document.createElement('option');
+      opt.value = val;
+      opt.textContent = label;
+      if (val === selectedValue) opt.selected = true;
+      selectEl.appendChild(opt);
+    }
+  }
+}
 
 // ─── HTML Escape ──────────────────────────────────────────
 function escHtml(str) {
