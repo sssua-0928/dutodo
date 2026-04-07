@@ -961,6 +961,7 @@
 <!-- Context Menu (Todo) -->
 <div class="ctx-menu" id="ctx-menu">
   <div class="ctx-menu-item" id="ctx-edit">✏️ 수정</div>
+  <div class="ctx-menu-item" id="ctx-tomorrow">📅 내일하기</div>
   <div class="ctx-menu-item danger" id="ctx-delete">🗑 삭제</div>
 </div>
 
@@ -1757,6 +1758,21 @@ function hideCtxMenu() {
 document.getElementById('ctx-edit').addEventListener('click', () => {
   if (!ctxTodoId) return;
   showEditModal(ctxTodoId);
+  hideCtxMenu();
+});
+
+document.getElementById('ctx-tomorrow').addEventListener('click', () => {
+  if (!ctxTodoId) return;
+  const todo = data.todos.find(t => t.id === ctxTodoId);
+  if (todo) {
+    const d = new Date(todo.date);
+    d.setDate(d.getDate() + 1);
+    todo.date = toDateStr(d.getFullYear(), d.getMonth(), d.getDate());
+    todo.done = false;
+    saveData();
+    renderTodos();
+    renderCalendar();
+  }
   hideCtxMenu();
 });
 
