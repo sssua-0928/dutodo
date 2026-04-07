@@ -1,0 +1,25 @@
+# 개인 데이터
+todo-data.json
+
+# 환경변수 / 키
+.env
+.env.*
+*.key
+*.pem
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# 로그
+*.log
+
+# OMC
+.omc/

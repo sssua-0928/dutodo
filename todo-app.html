@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Todo</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f0f0f5;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --text-sub: #8e8e93;
+    --text-muted: #c7c7cc;
+    --border: #e5e5ea;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: -apple-system, 'Apple SD Gothic Neo', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Layout ── */
+  .app {
+    display: flex;
+    height: 100vh;
+    padding: 20px;
+    gap: 16px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .panel-left {
+    width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .panel-right {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  .panel-right::-webkit-scrollbar { width: 4px; }
+  .panel-right::-webkit-scrollbar-track { background: transparent; }
+  .panel-right::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+  }
+
+  /* ── Calendar ── */
+  .cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .cal-title {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .cal-nav {
+    display: flex;
+    gap: 6px;
+  }
+
+  .cal-nav button {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: var(--bg);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    transition: background 0.15s;
+  }
+
+  .cal-nav button:hover { background: var(--border); }
+
+  .cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 6px;
+  }
+
+  .cal-weekday {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-sub);
+    padding: 4px 0;
+  }
+
+  .cal-weekday:first-child { color: #FF3B30; }
+  .cal-weekday:last-child { color: #007AFF; }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+
+  .cal-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3px 2px 5px;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: background 0.12s;
+    min-height: 44px;
+    user-select: none;
+  }
+
+  .cal-cell:hover { background: var(--bg); }
+  .cal-cell.selected { background: #f0f0f5; }
+
+  .cal-day-num {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+
+  .cal-cell.today .cal-day-num {
+    background: #1a1a1a;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .cal-cell.selected:not(.today) .cal-day-num {
+    background: var(--border);
+    color: var(--text);
+  }
+
+  .cal-cell.other-month .cal-day-num { color: var(--text-muted); }
+  .cal-cell.sun .cal-day-num { color: #FF3B30; }
+  .cal-cell.sat .cal-day-num { color: #007AFF; }
+  .cal-cell.today .cal-day-num { color: #fff !important; }
+
+  .cal-dots {
+    display: flex;
+    gap: 2px;
+    margin-top: 3px;
+    min-height: 6px;
+    align-items: center;
+  }
+
+  .cal-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #c7c7cc;
+  }
+
+  .cal-dot.done { background: #34C759; }
+
+  /* ── Date Header ── */
+  .date-header {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .date-header .day-num {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .date-header .day-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .date-header .day-week {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-sub);
+  }
+
+  .date-header .day-month {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .date-header .today-badge {
+    margin-left: auto;
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+
+  /* ── Category Card ── */
+  .cat-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+
+  .cat-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.09); }
+
+  .cat-header {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px 12px;
+    gap: 8px;
+  }
+
+  .cat-icon {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .cat-color-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .cat-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+
+  .cat-count {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .cat-add-btn {
+    width: 26px;
+    height: 26px;
+    border: none;
+    background: var(--bg);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-sub);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .cat-add-btn:hover { background: var(--border); color: var(--text); }
+
+  .cat-body { padding: 0 12px 12px; }
+
+  /* ── Subcategory ── */
+  .subcat-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 8px 4px;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .subcat-header:first-child { margin-top: 0; }
+
+  .subcat-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .subcat-name {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-sub);
+    letter-spacing: -0.1px;
+  }
+
+  .subcat-count {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .subcat-add-btn {
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .subcat-add-btn:hover { background: var(--bg); color: var(--text-sub); }
+
+  .subcat-menu-btn {
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    flex-shrink: 0;
+    opacity: 0;
+  }
+
+  .subcat-header:hover .subcat-menu-btn { opacity: 1; }
+  .subcat-menu-btn:hover { background: var(--bg); color: var(--text-sub); }
+
+  .subcat-todos {
+    padding-left: 6px;
+  }
+
+  .add-subcat-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    margin-top: 4px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.12s;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .add-subcat-bar:hover { background: var(--bg); color: var(--text-sub); }
+
+  .subcat-inline-add {
+    padding: 6px 8px;
+    display: none;
+    margin-top: 4px;
+  }
+
+  .subcat-inline-add.active { display: flex; gap: 6px; align-items: center; }
+
+  .subcat-inline-add input {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    color: var(--text);
+    outline: none;
+    background: var(--bg);
+  }
+
+  .subcat-inline-add input:focus { border-color: #1a1a1a; background: var(--card); }
+
+  /* ── Todo Item ── */
+  .todo-item {
+    display: flex;
+    align-items: center;
+    padding: 9px 8px;
+    gap: 10px;
+    border-radius: var(--radius-sm);
+    transition: background 0.12s;
+    position: relative;
+    cursor: default;
+  }
+
+  .todo-item:hover { background: var(--bg); }
+  .todo-item:hover .todo-menu-btn { opacity: 1; }
+
+  .todo-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    background: transparent;
+  }
+
+  .todo-check.checked {
+    border-color: transparent;
+    color: #fff;
+  }
+
+  .todo-check.checked::after {
+    content: '✓';
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .todo-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .todo-text {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.2s;
+    line-height: 1.3;
+  }
+
+  .todo-text.done {
+    text-decoration: line-through;
+    color: var(--text-muted);
+  }
+
+  .todo-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .todo-duration {
+    background: #f0f0f5;
+    color: var(--text-sub);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+
+  .todo-time {
+    font-size: 11px;
+    color: var(--text-sub);
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .todo-menu-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-sub);
+    font-size: 16px;
+    opacity: 0;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .todo-menu-btn:hover { background: var(--border); }
+
+  /* ── Inline Add Form ── */
+  .inline-add {
+    padding: 8px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    margin: 4px 0;
+    display: none;
+  }
+
+  .inline-add.active { display: block; }
+
+  .inline-add input[type="text"] {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text);
+    outline: none;
+    padding: 4px 0;
+    font-weight: 500;
+  }
+
+  .inline-add input[type="text"]::placeholder { color: var(--text-muted); }
+
+  .inline-add-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+
+  .duration-select, .time-input {
+    border: none;
+    background: var(--card);
+    border-radius: 8px;
+    padding: 5px 8px;
+    font-size: 12px;
+    font-family: inherit;
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+  }
+
+  .time-input { width: 90px; }
+
+  .inline-add-actions {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+  }
+
+  .btn-save {
+    background: #1a1a1a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s;
+  }
+
+  .btn-save:hover { opacity: 0.8; }
+
+  .btn-cancel {
+    background: var(--border);
+    color: var(--text-sub);
+    border: none;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s;
+  }
+
+  .btn-cancel:hover { opacity: 0.8; }
+
+  /* ── Add Category Button ── */
+  .add-cat-btn {
+    background: var(--card);
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-sub);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+
+  .add-cat-btn:hover { border-color: var(--text-sub); color: var(--text); background: var(--bg); }
+
+  /* ── Empty State ── */
+  .empty-state {
+    text-align: center;
+    padding: 24px 16px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .empty-state .emoji { font-size: 28px; display: block; margin-bottom: 8px; }
+
+  /* ── Context Menu ── */
+  .ctx-menu {
+    position: fixed;
+    background: var(--card);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    padding: 6px;
+    z-index: 1000;
+    min-width: 140px;
+    display: none;
+    animation: fadeIn 0.1s ease;
+  }
+
+  .ctx-menu.show { display: block; }
+
+  .ctx-menu-item {
+    padding: 9px 12px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.1s;
+  }
+
+  .ctx-menu-item:hover { background: var(--bg); }
+  .ctx-menu-item.danger { color: #FF3B30; }
+  .ctx-menu-item.danger:hover { background: #fff1f0; }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 900;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+    animation: fadeIn 0.15s ease;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 24px;
+    width: 340px;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.2s ease;
+  }
+
+  .modal-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 18px;
+    letter-spacing: -0.3px;
+  }
+
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  .form-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-sub);
+    margin-bottom: 6px;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .form-input {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+    background: var(--bg);
+  }
+
+  .form-input:focus { border-color: #1a1a1a; background: var(--card); }
+
+  .emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+  }
+
+  .emoji-option {
+    width: 100%;
+    aspect-ratio: 1;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+
+  .emoji-option:hover { border-color: var(--text-sub); background: var(--card); }
+  .emoji-option.selected { border-color: #1a1a1a; background: var(--card); box-shadow: 0 0 0 2px rgba(0,0,0,0.08); }
+
+  .color-grid {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .color-option {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .color-option.selected {
+    border-color: #1a1a1a;
+    box-shadow: 0 0 0 2px var(--card), 0 0 0 4px #1a1a1a;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+  }
+
+  .modal-actions .btn-save { flex: 1; padding: 12px; font-size: 14px; border-radius: var(--radius-sm); }
+  .modal-actions .btn-cancel { padding: 12px 16px; font-size: 14px; border-radius: var(--radius-sm); }
+
+  /* ── Edit Todo Modal ── */
+  .edit-todo-modal .form-group .duration-select,
+  .edit-todo-modal .form-group .time-input {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--bg);
+    outline: none;
+  }
+
+  /* ── Progress Bar ── */
+  .progress-bar-wrap {
+    height: 4px;
+    background: var(--bg);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: #34C759;
+    transition: width 0.4s ease;
+  }
+
+  /* ── Stats Card ── */
+  .stats-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .stats-text { flex: 1; }
+  .stats-label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+  .stats-value { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; margin-top: 1px; }
+
+  /* ── Animations ── */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(16px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes checkPop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+
+  .check-pop { animation: checkPop 0.2s ease; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 0; }
+
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    .app { flex-direction: column; height: auto; min-height: 100vh; padding: 12px; }
+    .panel-left { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="panel-left">
+    <div class="card" id="calendar-card">
+      <div class="cal-header">
+        <span class="cal-title" id="cal-title"></span>
+        <div class="cal-nav">
+          <button id="cal-prev">‹</button>
+          <button id="cal-next">›</button>
+        </div>
+      </div>
+      <div class="cal-weekdays">
+        <div class="cal-weekday">일</div>
+        <div class="cal-weekday">월</div>
+        <div class="cal-weekday">화</div>
+        <div class="cal-weekday">수</div>
+        <div class="cal-weekday">목</div>
+        <div class="cal-weekday">금</div>
+        <div class="cal-weekday">토</div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-text">
+        <div class="stats-label">오늘 완료</div>
+        <div class="stats-value" id="stats-value">0 / 0</div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-right" id="panel-right">
+    <div class="card" style="padding:16px 20px;">
+      <div class="date-header" id="date-header"></div>
+    </div>
+    <div id="todo-area"></div>
+    <button class="add-cat-btn" id="add-cat-btn">＋ 카테고리 추가</button>
+  </div>
+</div>
+
+<!-- Context Menu (Todo) -->
+<div class="ctx-menu" id="ctx-menu">
+  <div class="ctx-menu-item" id="ctx-edit">✏️ 수정</div>
+  <div class="ctx-menu-item danger" id="ctx-delete">🗑 삭제</div>
+</div>
+
+<!-- Context Menu (Subcategory) -->
+<div class="ctx-menu" id="subcat-ctx-menu">
+  <div class="ctx-menu-item" id="subcat-ctx-rename">✏️ 이름 변경</div>
+  <div class="ctx-menu-item danger" id="subcat-ctx-delete">🗑 삭제</div>
+</div>
+
+<!-- Add Category Modal -->
+<div class="modal-overlay" id="cat-modal">
+  <div class="modal">
+    <div class="modal-title" id="cat-modal-title">카테고리 추가</div>
+    <div class="form-group">
+      <label class="form-label">이름</label>
+      <input class="form-input" type="text" id="cat-name-input" placeholder="카테고리 이름">
+    </div>
+    <div class="form-group">
+      <label class="form-label">아이콘</label>
+      <div class="emoji-grid" id="emoji-grid"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">색상</label>
+      <div class="color-grid" id="color-grid"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="cat-cancel">취소</button>
+      <button class="btn-save" id="cat-save">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Todo Modal -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal edit-todo-modal">
+    <div class="modal-title">할일 수정</div>
+    <div class="form-group">
+      <label class="form-label">할일</label>
+      <input class="form-input" type="text" id="edit-text-input">
+    </div>
+    <div class="form-group">
+      <label class="form-label">소요시간</label>
+      <select class="duration-select" id="edit-duration-input">
+        <option value="">없음</option>
+        <option value="15m">15분</option>
+        <option value="30m">30분</option>
+        <option value="1h">1시간</option>
+        <option value="2h">2시간</option>
+        <option value="3h">3시간</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">예정 시간</label>
+      <input class="form-input" type="time" id="edit-time-input">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="edit-cancel">취소</button>
+      <button class="btn-save" id="edit-save">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Constants ────────────────────────────────────────────
+const STORAGE_KEY = 'todoApp';
+const DAYS = ['일','월','화','수','목','금','토'];
+const EMOJIS = ['💰','✨','📈','🏋️','📚','🎯','💼','🌸','🎨','🎵','🍳','✈️','💻','📝','🏠','🌙'];
+const COLORS = ['#FFB800','#7C7AEF','#FF6B8A','#34C759','#007AFF','#FF9500','#5AC8FA','#AF52DE','#FF3B30','#00C7BE','#1a1a1a','#8e8e93'];
+
+const DEFAULT_DATA = {
+  categories: [
+    { id: 'cat-1', name: '취준', icon: '💰', color: '#FFB800', order: 0, parentId: null },
+    { id: 'cat-1-1', name: '펜타시큐리티', icon: null, color: null, order: 0, parentId: 'cat-1' },
+    { id: 'cat-1-2', name: '공통', icon: null, color: null, order: 1, parentId: 'cat-1' },
+    { id: 'cat-2', name: 'To-do', icon: '✨', color: '#7C7AEF', order: 1, parentId: null },
+    { id: 'cat-3', name: '데이터야놀자', icon: '📈', color: '#FF6B8A', order: 2, parentId: null }
+  ],
+  todos: [
+    { id: 'todo-1', categoryId: 'cat-1-1', text: '면접 준비', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 0 },
+    { id: 'todo-2', categoryId: 'cat-1-1', text: '보안 기본지식 정리', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 1 },
+    { id: 'todo-3', categoryId: 'cat-1-2', text: '취준스터디 경신스', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 0 },
+    { id: 'todo-4', categoryId: 'cat-2', text: '세빈카공', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 0 },
+    { id: 'todo-5', categoryId: 'cat-2', text: 'e4i2 계획 정리', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 1 },
+    { id: 'todo-6', categoryId: 'cat-3', text: '플파트 회의 준비', date: '2026-04-07', done: false, duration: '15m', scheduledTime: '18:00', order: 0 },
+    { id: 'todo-7', categoryId: 'cat-3', text: '플파트 회의', date: '2026-04-07', done: false, duration: '1h', scheduledTime: '21:30', order: 1 },
+    { id: 'todo-8', categoryId: 'cat-3', text: '전체 회의', date: '2026-04-07', done: false, duration: '1h', scheduledTime: null, order: 2 }
+  ]
+};
+
+// ─── State ────────────────────────────────────────────────
+let data = { categories: [], todos: [] };
+let calYear, calMonth;
+let selectedDate;
+let ctxTodoId = null;
+let ctxSubcatId = null;
+let editingCatId = null;
+let useApi = false;
+
+// ─── Storage ──────────────────────────────────────────────
+async function loadData() {
+  const apiUrl = 'http://localhost:8080';
+  try {
+    const res = await fetch(apiUrl + '/api/data');
+    if (!res.ok) throw new Error('API error');
+    const json = await res.json();
+    useApi = true;
+    if (!json) {
+      data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      await saveDataAsync();
+    } else {
+      data = json;
+      let migrated = false;
+      data.categories.forEach(c => {
+        if (c.parentId === undefined) { c.parentId = null; migrated = true; }
+      });
+      if (migrated) saveData();
+    }
+  } catch (e) {
+    console.warn('API unavailable, using localStorage:', e.message);
+    useApi = false;
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      saveData();
+    } else {
+      data = JSON.parse(raw);
+      data.categories.forEach(c => {
+        if (c.parentId === undefined) c.parentId = null;
+      });
+    }
+  }
+}
+
+function saveData() {
+  if (useApi) {
+    fetch('http://localhost:8080/api/data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(() => console.log('Saved to file')).catch(e => console.warn('Save failed:', e));
+  }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+async function saveDataAsync() {
+  if (useApi) {
+    try {
+      await fetch('http://localhost:8080/api/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      console.log('Saved to file (async)');
+    } catch(e) { console.warn('Async save failed:', e); }
+  }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function getSubcategories(parentId) {
+  return data.categories.filter(c => c.parentId === parentId).sort((a, b) => a.order - b.order);
+}
+
+function getTopCategories() {
+  return data.categories.filter(c => c.parentId === null).sort((a, b) => a.order - b.order);
+}
+
+function getAllTodoCatIds(catId) {
+  // Returns catId + all subcategory ids
+  const subs = getSubcategories(catId);
+  if (subs.length === 0) return [catId];
+  return [catId, ...subs.map(s => s.id)];
+}
+
+// ─── Utilities ────────────────────────────────────────────
+function uid() {
+  return 'id-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+function toDateStr(y, m, d) {
+  return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+function todayStr() {
+  const t = new Date();
+  return toDateStr(t.getFullYear(), t.getMonth(), t.getDate());
+}
+
+function formatDisplayDate(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dow = new Date(y, m-1, d).getDay();
+  return { y, m, d, dow, dayName: DAYS[dow] };
+}
+
+function formatTime(t) {
+  if (!t) return '';
+  const [h, min] = t.split(':').map(Number);
+  const ampm = h < 12 ? '오전' : '오후';
+  const hh = h % 12 === 0 ? 12 : h % 12;
+  return `${ampm} ${hh}:${String(min).padStart(2,'0')}`;
+}
+
+// ─── Calendar ─────────────────────────────────────────────
+function initCalendar() {
+  const today = new Date();
+  calYear = today.getFullYear();
+  calMonth = today.getMonth();
+  selectedDate = todayStr();
+}
+
+function renderCalendar() {
+  const title = document.getElementById('cal-title');
+  title.textContent = `${calYear}년 ${calMonth + 1}월`;
+
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+  const today = todayStr();
+
+  // Todo dot map for this calendar view
+  const dotMap = {};
+  data.todos.forEach(t => {
+    if (!dotMap[t.date]) dotMap[t.date] = { total: 0, done: 0 };
+    dotMap[t.date].total++;
+    if (t.done) dotMap[t.date].done++;
+  });
+
+  // Total cells: enough rows
+  const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+
+  for (let i = 0; i < totalCells; i++) {
+    let day, month, year, isOther = false;
+    if (i < firstDay) {
+      day = daysInPrev - firstDay + i + 1;
+      month = calMonth - 1;
+      year = calYear;
+      if (month < 0) { month = 11; year--; }
+      isOther = true;
+    } else if (i >= firstDay + daysInMonth) {
+      day = i - firstDay - daysInMonth + 1;
+      month = calMonth + 1;
+      year = calYear;
+      if (month > 11) { month = 0; year++; }
+      isOther = true;
+    } else {
+      day = i - firstDay + 1;
+      month = calMonth;
+      year = calYear;
+    }
+
+    const dateStr = toDateStr(year, month, day);
+    const dow = i % 7;
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell';
+    if (isOther) cell.classList.add('other-month');
+    if (dow === 0) cell.classList.add('sun');
+    if (dow === 6) cell.classList.add('sat');
+    if (dateStr === today) cell.classList.add('today');
+    if (dateStr === selectedDate) cell.classList.add('selected');
+
+    cell.innerHTML = `<div class="cal-day-num">${day}</div><div class="cal-dots"></div>`;
+
+    // Dots
+    const dotsEl = cell.querySelector('.cal-dots');
+    const info = dotMap[dateStr];
+    if (info && info.total > 0) {
+      const shown = Math.min(info.total, 3);
+      for (let k = 0; k < shown; k++) {
+        const dot = document.createElement('div');
+        dot.className = 'cal-dot' + (k < info.done ? ' done' : '');
+        dotsEl.appendChild(dot);
+      }
+    }
+
+    cell.addEventListener('click', () => {
+      selectedDate = dateStr;
+      renderCalendar();
+      renderTodos();
+    });
+
+    grid.appendChild(cell);
+  }
+}
+
+// ─── Date Header ──────────────────────────────────────────
+function renderDateHeader() {
+  const el = document.getElementById('date-header');
+  const { y, m, d, dayName } = formatDisplayDate(selectedDate);
+  const isToday = selectedDate === todayStr();
+
+  el.innerHTML = `
+    <div class="day-num">${d}</div>
+    <div class="day-info">
+      <span class="day-week">${dayName}요일</span>
+      <span class="day-month">${y}년 ${m}월</span>
+    </div>
+    ${isToday ? '<span class="today-badge">오늘</span>' : ''}
+  `;
+}
+
+// ─── Stats ────────────────────────────────────────────────
+function renderStats() {
+  const todayTodos = data.todos.filter(t => t.date === selectedDate);
+  const done = todayTodos.filter(t => t.done).length;
+  const total = todayTodos.length;
+  document.getElementById('stats-value').textContent = `${done} / ${total}`;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+// ─── Todos ────────────────────────────────────────────────
+function getTodosForDate(dateStr) {
+  return data.todos.filter(t => t.date === dateStr);
+}
+
+function renderTodos() {
+  renderDateHeader();
+  renderStats();
+
+  const area = document.getElementById('todo-area');
+  area.innerHTML = '';
+
+  const todosForDate = getTodosForDate(selectedDate);
+
+  getTopCategories().forEach(cat => {
+    const subcats = getSubcategories(cat.id);
+    const hasSubcats = subcats.length > 0;
+
+    // Collect all todos for this category (direct + subcategory)
+    const allCatIds = getAllTodoCatIds(cat.id);
+    const allCatTodos = todosForDate.filter(t => allCatIds.includes(t.categoryId));
+    const allDone = allCatTodos.filter(t => t.done).length;
+
+    const card = document.createElement('div');
+    card.className = 'cat-card';
+    card.dataset.catId = cat.id;
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'cat-header';
+    header.innerHTML = `
+      <span class="cat-icon">${cat.icon}</span>
+      <div class="cat-color-dot" style="background:${cat.color}"></div>
+      <span class="cat-name">${escHtml(cat.name)}</span>
+      <span class="cat-count">${allDone}/${allCatTodos.length}</span>
+      <button class="cat-add-btn" data-cat="${cat.id}" data-has-subcats="${hasSubcats}" title="${hasSubcats ? '할일 추가 (서브카테고리 선택)' : '할일 추가'}">+</button>
+    `;
+    card.appendChild(header);
+
+    // Body
+    const body = document.createElement('div');
+    body.className = 'cat-body';
+
+    if (hasSubcats) {
+      // Render subcategories
+      subcats.forEach(sub => {
+        const subTodos = todosForDate
+          .filter(t => t.categoryId === sub.id)
+          .sort((a, b) => a.order - b.order);
+        const subDone = subTodos.filter(t => t.done).length;
+
+        // Subcategory header
+        const subHeader = document.createElement('div');
+        subHeader.className = 'subcat-header';
+        subHeader.innerHTML = `
+          <div class="subcat-dot" style="background:${cat.color}"></div>
+          <span class="subcat-name">${escHtml(sub.name)}</span>
+          <span class="subcat-count">${subDone}/${subTodos.length}</span>
+          <button class="subcat-add-btn" data-cat="${sub.id}" title="할일 추가">+</button>
+          <button class="subcat-menu-btn" data-subcat="${sub.id}">···</button>
+        `;
+        body.appendChild(subHeader);
+
+        // Subcategory todos
+        const subTodoWrap = document.createElement('div');
+        subTodoWrap.className = 'subcat-todos';
+        subTodos.forEach(todo => {
+          subTodoWrap.appendChild(makeTodoEl(todo, cat));
+        });
+
+        // Inline add form for subcategory
+        const addForm = makeInlineAddForm(sub.id);
+        subTodoWrap.appendChild(addForm);
+
+        body.appendChild(subTodoWrap);
+      });
+
+      // Also render direct todos (todos directly under parent, not in subcategory)
+      const directTodos = todosForDate
+        .filter(t => t.categoryId === cat.id)
+        .sort((a, b) => a.order - b.order);
+      if (directTodos.length > 0) {
+        const directHeader = document.createElement('div');
+        directHeader.className = 'subcat-header';
+        directHeader.innerHTML = `
+          <div class="subcat-dot" style="background:${cat.color}; opacity:0.4"></div>
+          <span class="subcat-name">기타</span>
+          <span class="subcat-count">${directTodos.filter(t=>t.done).length}/${directTodos.length}</span>
+          <button class="subcat-add-btn" data-cat="${cat.id}" title="할일 추가">+</button>
+        `;
+        body.appendChild(directHeader);
+        const directWrap = document.createElement('div');
+        directWrap.className = 'subcat-todos';
+        directTodos.forEach(todo => directWrap.appendChild(makeTodoEl(todo, cat)));
+        const addForm = makeInlineAddForm(cat.id);
+        directWrap.appendChild(addForm);
+        body.appendChild(directWrap);
+      }
+
+      // Add subcategory bar
+      const addSubBar = document.createElement('div');
+      addSubBar.className = 'add-subcat-bar';
+      addSubBar.dataset.parentId = cat.id;
+      addSubBar.innerHTML = '＋ 서브카테고리 추가';
+      body.appendChild(addSubBar);
+
+      // Inline add for subcategory creation
+      const subcatForm = document.createElement('div');
+      subcatForm.className = 'subcat-inline-add';
+      subcatForm.id = `add-subcat-form-${cat.id}`;
+      subcatForm.innerHTML = `
+        <input type="text" placeholder="기업명 또는 그룹명..." class="subcat-name-input">
+        <button class="btn-save" style="padding:6px 10px; font-size:11px;">추가</button>
+        <button class="btn-cancel" style="padding:6px 8px; font-size:11px;">취소</button>
+      `;
+      body.appendChild(subcatForm);
+
+    } else {
+      // No subcategories — render todos directly (original behavior)
+      const catTodos = todosForDate
+        .filter(t => t.categoryId === cat.id)
+        .sort((a, b) => a.order - b.order);
+
+      if (catTodos.length === 0) {
+        body.innerHTML = '<div class="empty-state"><span class="emoji">🌿</span>할일을 추가해보세요</div>';
+      }
+
+      catTodos.forEach(todo => {
+        body.appendChild(makeTodoEl(todo, cat));
+      });
+
+      const addForm = makeInlineAddForm(cat.id);
+      body.appendChild(addForm);
+    }
+
+    card.appendChild(body);
+    area.appendChild(card);
+  });
+
+  // Wire add todo buttons (both cat-level and subcat-level)
+  area.querySelectorAll('.cat-add-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const catId = btn.dataset.cat;
+      const hasSubcats = btn.dataset.hasSubcats === 'true';
+      if (hasSubcats) {
+        // For categories with subcats, show first subcategory's add form
+        const subs = getSubcategories(catId);
+        if (subs.length > 0) showInlineAdd(subs[0].id);
+      } else {
+        showInlineAdd(catId);
+      }
+    });
+  });
+
+  area.querySelectorAll('.subcat-add-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showInlineAdd(btn.dataset.cat);
+    });
+  });
+
+  // Wire subcategory menu buttons
+  area.querySelectorAll('.subcat-menu-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showSubcatCtxMenu(e, btn.dataset.subcat);
+    });
+  });
+
+  // Wire add subcategory bars
+  area.querySelectorAll('.add-subcat-bar').forEach(bar => {
+    bar.addEventListener('click', () => {
+      const parentId = bar.dataset.parentId;
+      const form = document.getElementById(`add-subcat-form-${parentId}`);
+      if (form) {
+        form.classList.add('active');
+        form.querySelector('.subcat-name-input').value = '';
+        form.querySelector('.subcat-name-input').focus();
+      }
+    });
+  });
+
+  // Wire subcategory creation forms
+  area.querySelectorAll('.subcat-inline-add').forEach(form => {
+    const parentId = form.id.replace('add-subcat-form-', '');
+    const input = form.querySelector('.subcat-name-input');
+    const saveBtn = form.querySelector('.btn-save');
+    const cancelBtn = form.querySelector('.btn-cancel');
+
+    saveBtn.addEventListener('click', () => {
+      const name = input.value.trim();
+      if (!name) return;
+      addSubcategory(parentId, name);
+      form.classList.remove('active');
+    });
+
+    cancelBtn.addEventListener('click', () => form.classList.remove('active'));
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') saveBtn.click();
+      if (e.key === 'Escape') cancelBtn.click();
+    });
+  });
+}
+
+function makeTodoEl(todo, cat) {
+  const item = document.createElement('div');
+  item.className = 'todo-item';
+  item.dataset.id = todo.id;
+
+  const checkColor = todo.done ? cat.color : 'transparent';
+  const borderColor = todo.done ? cat.color : 'var(--border)';
+
+  let metaHtml = '';
+  if (todo.duration) metaHtml += `<span class="todo-duration">${todo.duration}</span>`;
+  if (todo.scheduledTime) metaHtml += `<span class="todo-time">🕐 ${formatTime(todo.scheduledTime)}</span>`;
+
+  item.innerHTML = `
+    <div class="todo-check ${todo.done ? 'checked' : ''}" style="background:${checkColor}; border-color:${borderColor}; --cat-color:${cat.color}" data-id="${todo.id}"></div>
+    <div class="todo-content">
+      <span class="todo-text ${todo.done ? 'done' : ''}">${escHtml(todo.text)}</span>
+      ${metaHtml ? `<div class="todo-meta">${metaHtml}</div>` : ''}
+    </div>
+    <button class="todo-menu-btn" data-id="${todo.id}">···</button>
+  `;
+
+  // Check toggle
+  item.querySelector('.todo-check').addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleTodo(todo.id, e.currentTarget);
+  });
+
+  // Menu
+  item.querySelector('.todo-menu-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    showCtxMenu(e, todo.id);
+  });
+
+  return item;
+}
+
+function makeInlineAddForm(catId) {
+  const form = document.createElement('div');
+  form.className = 'inline-add';
+  form.id = `add-form-${catId}`;
+  form.innerHTML = `
+    <input type="text" placeholder="할일을 입력하세요..." class="add-text-input">
+    <div class="inline-add-row">
+      <select class="duration-select">
+        <option value="">시간 없음</option>
+        <option value="15m">15분</option>
+        <option value="30m">30분</option>
+        <option value="1h">1시간</option>
+        <option value="2h">2시간</option>
+        <option value="3h">3시간</option>
+      </select>
+      <input type="time" class="time-input" placeholder="예정시간">
+      <div class="inline-add-actions">
+        <button class="btn-cancel">취소</button>
+        <button class="btn-save">저장</button>
+      </div>
+    </div>
+  `;
+
+  form.querySelector('.btn-save').addEventListener('click', () => {
+    const text = form.querySelector('.add-text-input').value.trim();
+    if (!text) return;
+    const duration = form.querySelector('.duration-select').value || null;
+    const scheduledTime = form.querySelector('.time-input').value || null;
+    addTodo(catId, text, duration, scheduledTime);
+    hideInlineAdd(catId);
+  });
+
+  form.querySelector('.btn-cancel').addEventListener('click', () => hideInlineAdd(catId));
+
+  form.querySelector('.add-text-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') form.querySelector('.btn-save').click();
+    if (e.key === 'Escape') form.querySelector('.btn-cancel').click();
+  });
+
+  return form;
+}
+
+function showInlineAdd(catId) {
+  // Hide all others
+  document.querySelectorAll('.inline-add.active').forEach(f => f.classList.remove('active'));
+  const form = document.getElementById(`add-form-${catId}`);
+  if (form) {
+    form.classList.add('active');
+    form.querySelector('.add-text-input').focus();
+    // Clear
+    form.querySelector('.add-text-input').value = '';
+    form.querySelector('.duration-select').value = '';
+    form.querySelector('.time-input').value = '';
+  }
+}
+
+function hideInlineAdd(catId) {
+  const form = document.getElementById(`add-form-${catId}`);
+  if (form) form.classList.remove('active');
+}
+
+// ─── CRUD ─────────────────────────────────────────────────
+function toggleTodo(id, el) {
+  const todo = data.todos.find(t => t.id === id);
+  if (!todo) return;
+  todo.done = !todo.done;
+  saveData();
+  el.classList.add('check-pop');
+  el.addEventListener('animationend', () => el.classList.remove('check-pop'), { once: true });
+  // Re-render
+  renderTodos();
+  renderCalendar();
+}
+
+function addTodo(catId, text, duration, scheduledTime) {
+  const catTodos = data.todos.filter(t => t.categoryId === catId && t.date === selectedDate);
+  const maxOrder = catTodos.reduce((m, t) => Math.max(m, t.order), -1);
+  data.todos.push({
+    id: uid(),
+    categoryId: catId,
+    text,
+    date: selectedDate,
+    done: false,
+    duration: duration || null,
+    scheduledTime: scheduledTime || null,
+    order: maxOrder + 1
+  });
+  saveData();
+  renderTodos();
+  renderCalendar();
+}
+
+function deleteTodo(id) {
+  data.todos = data.todos.filter(t => t.id !== id);
+  saveData();
+  renderTodos();
+  renderCalendar();
+}
+
+function editTodo(id, text, duration, scheduledTime) {
+  const todo = data.todos.find(t => t.id === id);
+  if (!todo) return;
+  todo.text = text;
+  todo.duration = duration || null;
+  todo.scheduledTime = scheduledTime || null;
+  saveData();
+  renderTodos();
+}
+
+// ─── Subcategory CRUD ────────────────────────────────────
+function addSubcategory(parentId, name) {
+  const siblings = getSubcategories(parentId);
+  const maxOrder = siblings.reduce((m, c) => Math.max(m, c.order), -1);
+  data.categories.push({
+    id: uid(),
+    name,
+    icon: null,
+    color: null,
+    order: maxOrder + 1,
+    parentId
+  });
+  saveData();
+  renderTodos();
+}
+
+function deleteSubcategory(id) {
+  // Move todos to parent or delete them
+  data.todos = data.todos.filter(t => t.categoryId !== id);
+  data.categories = data.categories.filter(c => c.id !== id);
+  saveData();
+  renderTodos();
+  renderCalendar();
+}
+
+function renameSubcategory(id, newName) {
+  const cat = data.categories.find(c => c.id === id);
+  if (cat) {
+    cat.name = newName;
+    saveData();
+    renderTodos();
+  }
+}
+
+// ─── Context Menu ─────────────────────────────────────────
+function showCtxMenu(e, todoId) {
+  ctxTodoId = todoId;
+  const menu = document.getElementById('ctx-menu');
+  menu.classList.add('show');
+
+  const x = e.clientX;
+  const y = e.clientY;
+  const mw = 160, mh = 80;
+  menu.style.left = Math.min(x, window.innerWidth - mw - 8) + 'px';
+  menu.style.top = Math.min(y, window.innerHeight - mh - 8) + 'px';
+}
+
+function hideCtxMenu() {
+  document.getElementById('ctx-menu').classList.remove('show');
+  ctxTodoId = null;
+}
+
+document.getElementById('ctx-edit').addEventListener('click', () => {
+  if (!ctxTodoId) return;
+  showEditModal(ctxTodoId);
+  hideCtxMenu();
+});
+
+document.getElementById('ctx-delete').addEventListener('click', () => {
+  if (!ctxTodoId) return;
+  deleteTodo(ctxTodoId);
+  hideCtxMenu();
+});
+
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('ctx-menu').contains(e.target)) {
+    hideCtxMenu();
+  }
+  if (!document.getElementById('subcat-ctx-menu').contains(e.target)) {
+    hideSubcatCtxMenu();
+  }
+});
+
+// ─── Subcategory Context Menu ────────────────────────────
+function showSubcatCtxMenu(e, subcatId) {
+  ctxSubcatId = subcatId;
+  const menu = document.getElementById('subcat-ctx-menu');
+  menu.classList.add('show');
+  const x = e.clientX;
+  const y = e.clientY;
+  menu.style.left = Math.min(x, window.innerWidth - 160 - 8) + 'px';
+  menu.style.top = Math.min(y, window.innerHeight - 80 - 8) + 'px';
+}
+
+function hideSubcatCtxMenu() {
+  document.getElementById('subcat-ctx-menu').classList.remove('show');
+  ctxSubcatId = null;
+}
+
+document.getElementById('subcat-ctx-rename').addEventListener('click', () => {
+  if (!ctxSubcatId) return;
+  const cat = data.categories.find(c => c.id === ctxSubcatId);
+  if (!cat) return;
+  const newName = prompt('서브카테고리 이름:', cat.name);
+  if (newName && newName.trim()) {
+    renameSubcategory(ctxSubcatId, newName.trim());
+  }
+  hideSubcatCtxMenu();
+});
+
+document.getElementById('subcat-ctx-delete').addEventListener('click', () => {
+  if (!ctxSubcatId) return;
+  const cat = data.categories.find(c => c.id === ctxSubcatId);
+  if (cat && confirm(`"${cat.name}" 서브카테고리와 하위 할일을 모두 삭제할까요?`)) {
+    deleteSubcategory(ctxSubcatId);
+  }
+  hideSubcatCtxMenu();
+});
+
+// ─── Edit Modal ───────────────────────────────────────────
+let editingTodoId = null;
+
+function showEditModal(id) {
+  const todo = data.todos.find(t => t.id === id);
+  if (!todo) return;
+  editingTodoId = id;
+  document.getElementById('edit-text-input').value = todo.text;
+  document.getElementById('edit-duration-input').value = todo.duration || '';
+  document.getElementById('edit-time-input').value = todo.scheduledTime || '';
+  document.getElementById('edit-modal').classList.add('show');
+  setTimeout(() => document.getElementById('edit-text-input').focus(), 100);
+}
+
+document.getElementById('edit-save').addEventListener('click', () => {
+  const text = document.getElementById('edit-text-input').value.trim();
+  if (!text) return;
+  const duration = document.getElementById('edit-duration-input').value;
+  const time = document.getElementById('edit-time-input').value;
+  editTodo(editingTodoId, text, duration, time);
+  document.getElementById('edit-modal').classList.remove('show');
+  editingTodoId = null;
+});
+
+document.getElementById('edit-cancel').addEventListener('click', () => {
+  document.getElementById('edit-modal').classList.remove('show');
+  editingTodoId = null;
+});
+
+document.getElementById('edit-modal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('edit-modal')) {
+    document.getElementById('edit-modal').classList.remove('show');
+  }
+});
+
+// ─── Add Category ─────────────────────────────────────────
+let selectedEmoji = EMOJIS[0];
+let selectedColor = COLORS[0];
+
+function buildCatModal() {
+  const emojiGrid = document.getElementById('emoji-grid');
+  emojiGrid.innerHTML = '';
+  EMOJIS.forEach(e => {
+    const btn = document.createElement('button');
+    btn.className = 'emoji-option' + (e === selectedEmoji ? ' selected' : '');
+    btn.textContent = e;
+    btn.addEventListener('click', () => {
+      selectedEmoji = e;
+      emojiGrid.querySelectorAll('.emoji-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+    emojiGrid.appendChild(btn);
+  });
+
+  const colorGrid = document.getElementById('color-grid');
+  colorGrid.innerHTML = '';
+  COLORS.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'color-option' + (c === selectedColor ? ' selected' : '');
+    btn.style.background = c;
+    btn.addEventListener('click', () => {
+      selectedColor = c;
+      colorGrid.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+    colorGrid.appendChild(btn);
+  });
+}
+
+document.getElementById('add-cat-btn').addEventListener('click', () => {
+  selectedEmoji = EMOJIS[0];
+  selectedColor = COLORS[0];
+  document.getElementById('cat-name-input').value = '';
+  document.getElementById('cat-modal-title').textContent = '카테고리 추가';
+  buildCatModal();
+  document.getElementById('cat-modal').classList.add('show');
+  setTimeout(() => document.getElementById('cat-name-input').focus(), 100);
+});
+
+document.getElementById('cat-save').addEventListener('click', () => {
+  const name = document.getElementById('cat-name-input').value.trim();
+  if (!name) return;
+  const maxOrder = data.categories.reduce((m, c) => Math.max(m, c.order), -1);
+  data.categories.push({
+    id: uid(),
+    name,
+    icon: selectedEmoji,
+    color: selectedColor,
+    order: maxOrder + 1,
+    parentId: null
+  });
+  saveData();
+  document.getElementById('cat-modal').classList.remove('show');
+  renderTodos();
+});
+
+document.getElementById('cat-cancel').addEventListener('click', () => {
+  document.getElementById('cat-modal').classList.remove('show');
+});
+
+document.getElementById('cat-modal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('cat-modal')) {
+    document.getElementById('cat-modal').classList.remove('show');
+  }
+});
+
+// ─── Calendar Navigation ──────────────────────────────────
+document.getElementById('cal-prev').addEventListener('click', () => {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+});
+
+document.getElementById('cal-next').addEventListener('click', () => {
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+});
+
+// ─── Keyboard Shortcuts ───────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    hideCtxMenu();
+    hideSubcatCtxMenu();
+    document.querySelectorAll('.inline-add.active').forEach(f => f.classList.remove('active'));
+    document.querySelectorAll('.subcat-inline-add.active').forEach(f => f.classList.remove('active'));
+    document.getElementById('cat-modal').classList.remove('show');
+    document.getElementById('edit-modal').classList.remove('show');
+  }
+});
+
+// ─── HTML Escape ──────────────────────────────────────────
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── Init ─────────────────────────────────────────────────
+(async () => {
+  try {
+    await loadData();
+    console.log('loadData OK, useApi:', useApi, 'categories:', data.categories.length);
+    initCalendar();
+    renderCalendar();
+    renderTodos();
+    console.log('Init complete');
+  } catch(e) {
+    console.error('Init error:', e);
+  }
+})();
+</script>
+</body>
+</html>
