@@ -580,6 +580,56 @@
 
   .time-input { width: 90px; }
 
+  .time-picker {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .time-part {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--bg);
+    outline: none;
+    cursor: pointer;
+    flex: 1;
+  }
+
+  .time-part:focus { border-color: #1a1a1a; background: var(--card); }
+  .time-part:disabled { opacity: 0.4; cursor: default; }
+
+  .time-colon {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-sub);
+  }
+
+  .time-picker-inline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .time-picker-inline select {
+    border: none;
+    background: var(--card);
+    border-radius: 8px;
+    padding: 5px 6px;
+    font-size: 12px;
+    font-family: inherit;
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+  }
+
+  .time-picker-inline .time-colon {
+    font-size: 12px;
+  }
+
   .inline-add-actions {
     display: flex;
     gap: 6px;
@@ -970,7 +1020,16 @@
     </div>
     <div class="form-group">
       <label class="form-label">예정 시간</label>
-      <select class="form-input" id="edit-time-input"></select>
+      <div class="time-picker" id="edit-time-picker">
+        <select class="time-part" id="edit-time-ampm">
+          <option value="">없음</option>
+          <option value="오전">오전</option>
+          <option value="오후">오후</option>
+        </select>
+        <select class="time-part" id="edit-time-hour" disabled></select>
+        <span class="time-colon">:</span>
+        <select class="time-part" id="edit-time-min" disabled></select>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" id="edit-cancel">취소</button>
@@ -1535,7 +1594,12 @@ function makeInlineAddForm(catId) {
         <option value="2h">2시간</option>
         <option value="3h">3시간</option>
       </select>
-      <select class="time-input time-select"></select>
+      <div class="time-picker-inline">
+        <select class="inline-ampm"><option value="">없음</option><option value="오전">오전</option><option value="오후">오후</option></select>
+        <select class="inline-hour" disabled></select>
+        <span class="time-colon">:</span>
+        <select class="inline-min" disabled></select>
+      </div>
       <div class="inline-add-actions">
         <button class="btn-cancel">취소</button>
         <button class="btn-save">저장</button>
@@ -1547,7 +1611,11 @@ function makeInlineAddForm(catId) {
     const text = form.querySelector('.add-text-input').value.trim();
     if (!text) return;
     const duration = form.querySelector('.duration-select').value || null;
-    const scheduledTime = form.querySelector('.time-input').value || null;
+    const scheduledTime = getTimePickerValue(
+      form.querySelector('.inline-ampm'),
+      form.querySelector('.inline-hour'),
+      form.querySelector('.inline-min')
+    );
     addTodo(catId, text, duration, scheduledTime);
     hideInlineAdd(catId);
   });
@@ -1572,7 +1640,12 @@ function showInlineAdd(catId) {
     // Clear
     form.querySelector('.add-text-input').value = '';
     form.querySelector('.duration-select').value = '';
-    buildTimeOptions(form.querySelector('.time-input'), '');
+    setupTimePicker(
+      form.querySelector('.inline-ampm'),
+      form.querySelector('.inline-hour'),
+      form.querySelector('.inline-min'),
+      ''
+    );
   }
 }
 
@@ -1799,7 +1872,12 @@ function showEditModal(id) {
   editingTodoId = id;
   document.getElementById('edit-text-input').value = todo.text;
   document.getElementById('edit-duration-input').value = todo.duration || '';
-  buildTimeOptions(document.getElementById('edit-time-input'), todo.scheduledTime || '');
+  setupTimePicker(
+    document.getElementById('edit-time-ampm'),
+    document.getElementById('edit-time-hour'),
+    document.getElementById('edit-time-min'),
+    todo.scheduledTime || ''
+  );
   document.getElementById('edit-modal').classList.add('show');
   setTimeout(() => document.getElementById('edit-text-input').focus(), 100);
 }
@@ -1808,7 +1886,11 @@ document.getElementById('edit-save').addEventListener('click', () => {
   const text = document.getElementById('edit-text-input').value.trim();
   if (!text) return;
   const duration = document.getElementById('edit-duration-input').value;
-  const time = document.getElementById('edit-time-input').value;
+  const time = getTimePickerValue(
+    document.getElementById('edit-time-ampm'),
+    document.getElementById('edit-time-hour'),
+    document.getElementById('edit-time-min')
+  );
   editTodo(editingTodoId, text, duration, time);
   document.getElementById('edit-modal').classList.remove('show');
   editingTodoId = null;
@@ -1936,22 +2018,59 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// ─── Time Select (15분 단위) ─────────────────────────────
-function buildTimeOptions(selectEl, selectedValue) {
-  selectEl.innerHTML = '<option value="">시간 없음</option>';
-  for (let h = 0; h < 24; h++) {
-    for (let m = 0; m < 60; m += 15) {
-      const val = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
-      const ampm = h < 12 ? '오전' : '오후';
-      const hh = h % 12 === 0 ? 12 : h % 12;
-      const label = `${ampm} ${hh}:${String(m).padStart(2,'0')}`;
-      const opt = document.createElement('option');
-      opt.value = val;
-      opt.textContent = label;
-      if (val === selectedValue) opt.selected = true;
-      selectEl.appendChild(opt);
-    }
+// ─── Time Picker (오전/오후 + 시 + 분) ──────────────────
+function setupTimePicker(ampmEl, hourEl, minEl, value) {
+  // Build hour options (1~12)
+  hourEl.innerHTML = '';
+  for (let h = 1; h <= 12; h++) {
+    const opt = document.createElement('option');
+    opt.value = h;
+    opt.textContent = h;
+    hourEl.appendChild(opt);
   }
+  // Build min options (00, 15, 30, 45)
+  minEl.innerHTML = '';
+  [0, 15, 30, 45].forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = String(m).padStart(2, '0');
+    minEl.appendChild(opt);
+  });
+
+  // Set values from HH:MM string
+  if (value) {
+    const [hh, mm] = value.split(':').map(Number);
+    ampmEl.value = hh < 12 ? '오전' : '오후';
+    hourEl.value = hh % 12 === 0 ? 12 : hh % 12;
+    minEl.value = Math.floor(mm / 15) * 15; // snap to nearest 15
+    hourEl.disabled = false;
+    minEl.disabled = false;
+  } else {
+    ampmEl.value = '';
+    hourEl.disabled = true;
+    minEl.disabled = true;
+  }
+
+  // Toggle hour/min enabled on ampm change
+  ampmEl.onchange = () => {
+    const enabled = ampmEl.value !== '';
+    hourEl.disabled = !enabled;
+    minEl.disabled = !enabled;
+    if (enabled && !hourEl.value) hourEl.value = 12;
+    if (enabled && !minEl.value) minEl.value = 0;
+  };
+}
+
+function getTimePickerValue(ampmEl, hourEl, minEl) {
+  if (!ampmEl.value) return null;
+  let h = parseInt(hourEl.value);
+  const m = parseInt(minEl.value);
+  if (ampmEl.value === '오전') {
+    if (h === 12) h = 0;
+  } else {
+    if (h !== 12) h += 12;
+  }
+  return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
 }
 
 // ─── HTML Escape ──────────────────────────────────────────
