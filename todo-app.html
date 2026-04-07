@@ -974,6 +974,7 @@
 <!-- Context Menu (Category) -->
 <div class="ctx-menu" id="cat-ctx-menu">
   <div class="ctx-menu-item" id="cat-ctx-edit">✏️ 수정</div>
+  <div class="ctx-menu-item" id="cat-ctx-add-subcat">📁 서브카테고리 추가</div>
   <div class="ctx-menu-item danger" id="cat-ctx-delete">🗑 삭제</div>
 </div>
 
@@ -1391,24 +1392,6 @@ function renderTodos() {
         body.appendChild(directWrap);
       }
 
-      // Add subcategory bar
-      const addSubBar = document.createElement('div');
-      addSubBar.className = 'add-subcat-bar';
-      addSubBar.dataset.parentId = cat.id;
-      addSubBar.innerHTML = '＋ 서브카테고리 추가';
-      body.appendChild(addSubBar);
-
-      // Inline add for subcategory creation
-      const subcatForm = document.createElement('div');
-      subcatForm.className = 'subcat-inline-add';
-      subcatForm.id = `add-subcat-form-${cat.id}`;
-      subcatForm.innerHTML = `
-        <input type="text" placeholder="기업명 또는 그룹명..." class="subcat-name-input">
-        <button class="btn-save" style="padding:6px 10px; font-size:11px;">추가</button>
-        <button class="btn-cancel" style="padding:6px 8px; font-size:11px;">취소</button>
-      `;
-      body.appendChild(subcatForm);
-
     } else {
       // No subcategories — render todos directly (original behavior)
       body.dataset.dropCat = cat.id;
@@ -1823,6 +1806,15 @@ document.getElementById('cat-ctx-edit').addEventListener('click', () => {
   buildCatModal();
   document.getElementById('cat-modal').classList.add('show');
   setTimeout(() => document.getElementById('cat-name-input').focus(), 100);
+  hideCatCtxMenu();
+});
+
+document.getElementById('cat-ctx-add-subcat').addEventListener('click', () => {
+  if (!ctxCatId) return;
+  const name = prompt('서브카테고리 이름:');
+  if (name && name.trim()) {
+    addSubcategory(ctxCatId, name.trim());
+  }
   hideCatCtxMenu();
 });
 
