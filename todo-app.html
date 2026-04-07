@@ -378,6 +378,7 @@
   }
 
   .subcat-header:hover .subcat-menu-btn { opacity: 1; }
+  .subcat-header.archived { opacity: 0.5; }
   .subcat-menu-btn:hover { background: var(--bg); color: var(--text-sub); }
 
   .subcat-todos {
@@ -502,6 +503,15 @@
     color: var(--text-sub);
     font-size: 10px;
     font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+
+  .todo-delayed {
+    background: #FFF0F0;
+    color: #FF3B30;
+    font-size: 10px;
+    font-weight: 700;
     padding: 2px 7px;
     border-radius: 20px;
   }
@@ -968,6 +978,7 @@
 <!-- Context Menu (Subcategory) -->
 <div class="ctx-menu" id="subcat-ctx-menu">
   <div class="ctx-menu-item" id="subcat-ctx-rename">✏️ 이름 변경</div>
+  <div class="ctx-menu-item" id="subcat-ctx-archive">📦 숨기기</div>
   <div class="ctx-menu-item danger" id="subcat-ctx-delete">🗑 삭제</div>
 </div>
 
@@ -1056,14 +1067,14 @@ const DEFAULT_DATA = {
     { id: 'cat-3', name: '데이터야놀자', icon: '📈', color: '#FF6B8A', order: 2, parentId: null }
   ],
   todos: [
-    { id: 'todo-1', categoryId: 'cat-1-1', text: '면접 준비', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 0 },
-    { id: 'todo-2', categoryId: 'cat-1-1', text: '보안 기본지식 정리', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 1 },
-    { id: 'todo-3', categoryId: 'cat-1-2', text: '취준스터디 경신스', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 0 },
-    { id: 'todo-4', categoryId: 'cat-2', text: '세빈카공', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 0 },
-    { id: 'todo-5', categoryId: 'cat-2', text: 'e4i2 계획 정리', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 1 },
-    { id: 'todo-6', categoryId: 'cat-3', text: '플파트 회의 준비', date: '2026-04-07', done: false, duration: '15m', scheduledTime: '18:00', order: 0 },
-    { id: 'todo-7', categoryId: 'cat-3', text: '플파트 회의', date: '2026-04-07', done: false, duration: '1h', scheduledTime: '21:30', order: 1 },
-    { id: 'todo-8', categoryId: 'cat-3', text: '전체 회의', date: '2026-04-07', done: false, duration: '1h', scheduledTime: null, order: 2 }
+    { id: 'todo-1', categoryId: 'cat-1-1', text: '면접 준비', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 0, createdDate: '2026-04-07' },
+    { id: 'todo-2', categoryId: 'cat-1-1', text: '보안 기본지식 정리', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 1, createdDate: '2026-04-07' },
+    { id: 'todo-3', categoryId: 'cat-1-2', text: '취준스터디 경신스', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 0, createdDate: '2026-04-07' },
+    { id: 'todo-4', categoryId: 'cat-2', text: '세빈카공', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 0, createdDate: '2026-04-07' },
+    { id: 'todo-5', categoryId: 'cat-2', text: 'e4i2 계획 정리', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 1, createdDate: '2026-04-07' },
+    { id: 'todo-6', categoryId: 'cat-3', text: '플파트 회의 준비', date: '2026-04-07', done: false, duration: '15m', scheduledTime: '18:00', order: 0, createdDate: '2026-04-07' },
+    { id: 'todo-7', categoryId: 'cat-3', text: '플파트 회의', date: '2026-04-07', done: false, duration: '1h', scheduledTime: '21:30', order: 1, createdDate: '2026-04-07' },
+    { id: 'todo-8', categoryId: 'cat-3', text: '전체 회의', date: '2026-04-07', done: false, duration: '1h', scheduledTime: null, order: 2, createdDate: '2026-04-07' }
   ]
 };
 
@@ -1092,6 +1103,13 @@ async function loadData() {
       let migrated = false;
       data.categories.forEach(c => {
         if (c.parentId === undefined) { c.parentId = null; migrated = true; }
+      });
+      // Migrate: add createdDate if missing
+      data.todos.forEach(t => {
+        if (!t.createdDate) { t.createdDate = t.date; migrated = true; }
+      });
+      data.categories.forEach(c => {
+        if (c.archived === undefined) { c.archived = false; migrated = true; }
       });
       if (migrated) saveData();
     }
@@ -1340,14 +1358,18 @@ function renderTodos() {
         const subTodos = todosForDate
           .filter(t => t.categoryId === sub.id)
           .sort((a, b) => a.order - b.order);
+
+        // 숨긴 서브카테고리: 이 날짜에 할일 없으면 스킵
+        if (sub.archived && subTodos.length === 0) return;
+
         const subDone = subTodos.filter(t => t.done).length;
 
         // Subcategory header
         const subHeader = document.createElement('div');
-        subHeader.className = 'subcat-header';
+        subHeader.className = 'subcat-header' + (sub.archived ? ' archived' : '');
         subHeader.innerHTML = `
           <div class="subcat-dot" style="background:${cat.color}"></div>
-          <span class="subcat-name">${escHtml(sub.name)}</span>
+          <span class="subcat-name">${escHtml(sub.name)}${sub.archived ? ' <span style="font-size:10px;color:var(--text-muted)">(숨김)</span>' : ''}</span>
           <span class="subcat-count">${subDone}/${subTodos.length}</span>
           <button class="subcat-add-btn" data-cat="${sub.id}" title="할일 추가">+</button>
           <button class="subcat-menu-btn" data-subcat="${sub.id}">···</button>
@@ -1539,6 +1561,16 @@ function makeTodoEl(todo, cat) {
   if (todo.duration) metaHtml += `<span class="todo-duration">${todo.duration}</span>`;
   if (todo.scheduledTime) metaHtml += `<span class="todo-time">🕐 ${formatTime(todo.scheduledTime)}</span>`;
 
+  // 미룬 일수
+  if (todo.createdDate && todo.date !== todo.createdDate && !todo.done) {
+    const created = new Date(todo.createdDate);
+    const current = new Date(todo.date);
+    const days = Math.round((current - created) / (1000 * 60 * 60 * 24));
+    if (days > 0) {
+      metaHtml += `<span class="todo-delayed">D+${days}</span>`;
+    }
+  }
+
   item.innerHTML = `
     <div class="todo-check ${todo.done ? 'checked' : ''}" style="background:${checkColor}; border-color:${borderColor}; --cat-color:${cat.color}" data-id="${todo.id}"></div>
     <div class="todo-content">
@@ -1662,7 +1694,8 @@ function addTodo(catId, text, duration, scheduledTime) {
     done: false,
     duration: duration || null,
     scheduledTime: scheduledTime || null,
-    order: maxOrder + 1
+    order: maxOrder + 1,
+    createdDate: selectedDate
   });
   saveData();
   renderTodos();
@@ -1783,9 +1816,40 @@ let ctxCatId = null;
 function showCatCtxMenu(e, catId) {
   ctxCatId = catId;
   const menu = document.getElementById('cat-ctx-menu');
+
+  // 숨긴 서브카테고리 복원 목록 동적 생성
+  const oldRestoreItems = menu.querySelectorAll('.ctx-restore-item, .ctx-restore-divider');
+  oldRestoreItems.forEach(el => el.remove());
+
+  const archivedSubs = data.categories.filter(c => c.parentId === catId && c.archived);
+  if (archivedSubs.length > 0) {
+    const divider = document.createElement('div');
+    divider.className = 'ctx-restore-divider';
+    divider.style.cssText = 'border-top:1px solid var(--border); margin:4px 6px; padding-top:4px;';
+    const label = document.createElement('div');
+    label.style.cssText = 'padding:4px 12px; font-size:10px; font-weight:600; color:var(--text-muted); text-transform:uppercase;';
+    label.textContent = '숨긴 서브카테고리';
+    divider.appendChild(label);
+    menu.appendChild(divider);
+
+    archivedSubs.forEach(sub => {
+      const item = document.createElement('div');
+      item.className = 'ctx-menu-item ctx-restore-item';
+      item.textContent = '↩️ ' + sub.name;
+      item.addEventListener('click', () => {
+        sub.archived = false;
+        saveData();
+        renderTodos();
+        hideCatCtxMenu();
+      });
+      menu.appendChild(item);
+    });
+  }
+
   menu.classList.add('show');
-  menu.style.left = Math.min(e.clientX, window.innerWidth - 160 - 8) + 'px';
-  menu.style.top = Math.min(e.clientY, window.innerHeight - 80 - 8) + 'px';
+  const mh = menu.offsetHeight || 120;
+  menu.style.left = Math.min(e.clientX, window.innerWidth - 180 - 8) + 'px';
+  menu.style.top = Math.min(e.clientY, window.innerHeight - mh - 8) + 'px';
 }
 
 function hideCatCtxMenu() {
@@ -1858,6 +1922,17 @@ document.getElementById('subcat-ctx-rename').addEventListener('click', () => {
   const newName = prompt('서브카테고리 이름:', cat.name);
   if (newName && newName.trim()) {
     renameSubcategory(ctxSubcatId, newName.trim());
+  }
+  hideSubcatCtxMenu();
+});
+
+document.getElementById('subcat-ctx-archive').addEventListener('click', () => {
+  if (!ctxSubcatId) return;
+  const cat = data.categories.find(c => c.id === ctxSubcatId);
+  if (cat) {
+    cat.archived = true;
+    saveData();
+    renderTodos();
   }
   hideSubcatCtxMenu();
 });
