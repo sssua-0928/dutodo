@@ -542,6 +542,20 @@
     color: var(--text-muted);
   }
 
+  .todo-item.todo-drop-above {
+    border-top: 2px solid #007AFF;
+    margin-top: -2px;
+  }
+
+  .todo-item.todo-drop-below {
+    border-bottom: 2px solid #007AFF;
+    margin-bottom: -2px;
+  }
+
+  .todo-item.dragging {
+    opacity: 0.3;
+  }
+
   .todo-meta {
     display: flex;
     align-items: center;
@@ -947,6 +961,110 @@
   .stats-label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
   .stats-value { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; margin-top: 1px; }
 
+  /* ── Timeline ── */
+  .timeline-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 14px 16px;
+  }
+
+  .timeline-title {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+
+  .timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .tl-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 6px 0;
+    position: relative;
+  }
+
+  .tl-time-col {
+    width: 52px;
+    flex-shrink: 0;
+    text-align: right;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-sub);
+    padding-top: 1px;
+  }
+
+  .tl-line-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 12px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .tl-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  .tl-connector {
+    width: 1.5px;
+    flex: 1;
+    min-height: 12px;
+    background: var(--border);
+  }
+
+  .tl-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .tl-text {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+  }
+
+  .tl-text.tl-done {
+    text-decoration: line-through;
+    color: var(--text-muted);
+  }
+
+  .tl-meta {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  .tl-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 8px 0 2px;
+    letter-spacing: 0.3px;
+  }
+
+  .tl-empty {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 8px 0;
+  }
+
   /* ── Animations ── */
   @keyframes fadeIn {
     from { opacity: 0; }
@@ -1029,6 +1147,7 @@
         </div>
       </div>
     </div>
+    <div class="timeline-card" id="timeline-card"></div>
   </div>
 
   <div class="panel-right" id="panel-right">
@@ -1257,6 +1376,31 @@ function reorderCategory(draggedId, targetId) {
   renderCalendar();
 }
 
+function reorderTodo(draggedId, targetTodo, above) {
+  const dragged = data.todos.find(t => t.id === draggedId);
+  if (!dragged) return;
+
+  // 같은 카테고리 내 이동 또는 다른 카테고리로 이동 모두 처리
+  dragged.categoryId = targetTodo.categoryId;
+  dragged.date = targetTodo.date;
+
+  // 같은 카테고리+날짜의 할일들을 order 순으로 정렬
+  const siblings = data.todos
+    .filter(t => t.categoryId === targetTodo.categoryId && t.date === targetTodo.date && t.id !== draggedId)
+    .sort((a, b) => a.order - b.order);
+
+  const targetIdx = siblings.findIndex(t => t.id === targetTodo.id);
+  const insertIdx = above ? targetIdx : targetIdx + 1;
+  siblings.splice(insertIdx, 0, dragged);
+
+  // order 값 재부여
+  siblings.forEach((t, i) => t.order = i);
+
+  saveData();
+  renderTodos();
+  renderCalendar();
+}
+
 function getAllTodoCatIds(catId) {
   // Returns catId + all subcategory ids
   const subs = getSubcategories(catId);
@@ -1403,6 +1547,57 @@ function renderStats() {
   document.getElementById('progress-fill').style.width = pct + '%';
 }
 
+// ─── Timeline ─────────────────────────────────────────────
+function renderTimeline() {
+  const container = document.getElementById('timeline-card');
+  const todayTodos = data.todos.filter(t => t.date === selectedDate);
+
+  if (todayTodos.length === 0) {
+    container.innerHTML = `<div class="timeline-title">오늘 일정</div><div class="tl-empty">일정이 없습니다</div>`;
+    return;
+  }
+
+  const withTime = todayTodos.filter(t => t.scheduledTime).sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime));
+  const noTime = todayTodos.filter(t => !t.scheduledTime);
+
+  let html = '<div class="timeline-title">오늘 일정</div><div class="timeline-list">';
+
+  const allItems = [...withTime, ...noTime];
+
+  allItems.forEach((todo, idx) => {
+    const cat = data.categories.find(c => c.id === todo.categoryId);
+    const parentCat = cat && cat.parentId ? data.categories.find(c => c.id === cat.parentId) : cat;
+    const color = parentCat ? parentCat.color : '#ccc';
+    const catName = parentCat ? parentCat.name : '';
+    const isLast = idx === allItems.length - 1;
+    const isNoTimeFirst = (idx === withTime.length && noTime.length > 0);
+
+    if (isNoTimeFirst && withTime.length > 0) {
+      html += '<div class="tl-section-label" style="padding-left:74px;">시간 미정</div>';
+    }
+
+    const timeStr = todo.scheduledTime ? formatTime(todo.scheduledTime) : '—';
+    const doneClass = todo.done ? ' tl-done' : '';
+    const durationStr = todo.duration ? ` · ${todo.duration}` : '';
+
+    html += `
+      <div class="tl-item">
+        <div class="tl-time-col">${timeStr}</div>
+        <div class="tl-line-col">
+          <div class="tl-dot" style="background:${color}"></div>
+          ${!isLast ? '<div class="tl-connector"></div>' : ''}
+        </div>
+        <div class="tl-content">
+          <div class="tl-text${doneClass}">${escHtml(todo.text)}</div>
+          <div class="tl-meta">${catName}${durationStr}</div>
+        </div>
+      </div>`;
+  });
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
 // ─── Todos ────────────────────────────────────────────────
 function getTodosForDate(dateStr) {
   return data.todos.filter(t => t.date === dateStr);
@@ -1411,6 +1606,7 @@ function getTodosForDate(dateStr) {
 function renderTodos() {
   renderDateHeader();
   renderStats();
+  renderTimeline();
 
   const area = document.getElementById('todo-area');
   area.innerHTML = '';
@@ -1671,11 +1867,41 @@ function makeTodoEl(todo, cat) {
 
   item.addEventListener('dragstart', (e) => {
     e.dataTransfer.setData('text/plain', todo.id);
+    e.dataTransfer.setData('application/todo-id', todo.id);
     item.classList.add('dragging');
   });
   item.addEventListener('dragend', () => {
     item.classList.remove('dragging');
-    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    document.querySelectorAll('.drag-over,.todo-drop-above,.todo-drop-below').forEach(el => {
+      el.classList.remove('drag-over', 'todo-drop-above', 'todo-drop-below');
+    });
+  });
+  item.addEventListener('dragover', (e) => {
+    if (!e.dataTransfer.types.includes('application/todo-id')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = item.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    item.classList.remove('todo-drop-above', 'todo-drop-below');
+    if (e.clientY < midY) {
+      item.classList.add('todo-drop-above');
+    } else {
+      item.classList.add('todo-drop-below');
+    }
+  });
+  item.addEventListener('dragleave', () => {
+    item.classList.remove('todo-drop-above', 'todo-drop-below');
+  });
+  item.addEventListener('drop', (e) => {
+    if (!e.dataTransfer.types.includes('application/todo-id')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    item.classList.remove('todo-drop-above', 'todo-drop-below');
+    const draggedId = e.dataTransfer.getData('application/todo-id');
+    if (draggedId === todo.id) return;
+    const rect = item.getBoundingClientRect();
+    const above = e.clientY < rect.top + rect.height / 2;
+    reorderTodo(draggedId, todo, above);
   });
 
   // 기한 지난 미완료 항목 판별
