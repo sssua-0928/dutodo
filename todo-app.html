@@ -68,7 +68,7 @@
   }
 
   .panel-left {
-    width: 320px;
+    width: 380px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -78,6 +78,7 @@
   .panel-right {
     flex: 1;
     min-width: 0;
+    max-width: 520px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -991,10 +992,10 @@
   }
 
   .tl-time-col {
-    width: 52px;
+    width: 60px;
     flex-shrink: 0;
     text-align: right;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-sub);
     padding-top: 1px;
@@ -1009,12 +1010,31 @@
     position: relative;
   }
 
-  .tl-dot {
-    width: 8px;
-    height: 8px;
+  .tl-check {
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     flex-shrink: 0;
-    margin-top: 3px;
+    margin-top: 1px;
+    border: 2px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    padding: 0;
+  }
+
+  .tl-check.tl-checked {
+    border-color: transparent;
+    color: #fff;
+  }
+
+  .tl-check.tl-checked::after {
+    content: '✓';
+    font-size: 9px;
+    font-weight: 700;
   }
 
   .tl-connector {
@@ -1030,7 +1050,7 @@
   }
 
   .tl-text {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--text);
     white-space: nowrap;
@@ -1578,13 +1598,15 @@ function renderTimeline() {
 
     const timeStr = todo.scheduledTime ? formatTime(todo.scheduledTime) : '—';
     const doneClass = todo.done ? ' tl-done' : '';
+    const checkedClass = todo.done ? ' tl-checked' : '';
+    const checkBg = todo.done ? `background:${color};` : '';
     const durationStr = todo.duration ? ` · ${todo.duration}` : '';
 
     html += `
       <div class="tl-item">
         <div class="tl-time-col">${timeStr}</div>
         <div class="tl-line-col">
-          <div class="tl-dot" style="background:${color}"></div>
+          <button class="tl-check${checkedClass}" data-todo-id="${todo.id}" style="${checkBg} --tl-color:${color}"></button>
           ${!isLast ? '<div class="tl-connector"></div>' : ''}
         </div>
         <div class="tl-content">
@@ -1596,6 +1618,18 @@ function renderTimeline() {
 
   html += '</div>';
   container.innerHTML = html;
+
+  // 타임라인 체크 이벤트
+  container.querySelectorAll('.tl-check').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const todo = data.todos.find(t => t.id === btn.dataset.todoId);
+      if (!todo) return;
+      todo.done = !todo.done;
+      saveData();
+      renderTodos();
+      renderCalendar();
+    });
+  });
 }
 
 // ─── Todos ────────────────────────────────────────────────
@@ -2262,6 +2296,9 @@ document.getElementById('cat-ctx-delete').addEventListener('click', () => {
 // ─── Subcategory Context Menu ────────────────────────────
 function showSubcatCtxMenu(e, subcatId) {
   ctxSubcatId = subcatId;
+  const cat = data.categories.find(c => c.id === subcatId);
+  const archiveBtn = document.getElementById('subcat-ctx-archive');
+  archiveBtn.textContent = cat && cat.archived ? '👁 보이기' : '📦 숨기기';
   const menu = document.getElementById('subcat-ctx-menu');
   menu.classList.add('show');
   const x = e.clientX;
@@ -2290,7 +2327,7 @@ document.getElementById('subcat-ctx-archive').addEventListener('click', () => {
   if (!ctxSubcatId) return;
   const cat = data.categories.find(c => c.id === ctxSubcatId);
   if (cat) {
-    cat.archived = true;
+    cat.archived = !cat.archived;
     saveData();
     renderTodos();
   }
