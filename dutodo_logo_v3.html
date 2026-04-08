@@ -1,0 +1,87 @@
+
+<style>
+  .board { display:flex; gap:28px; flex-wrap:wrap; align-items:flex-start; justify-content:center; padding:2rem 1rem 1.5rem; }
+  .item { display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .lbl { font-size:11px; color:var(--color-text-tertiary); letter-spacing:0.6px; text-transform:uppercase; font-family:var(--font-sans); }
+  .wm { display:flex; align-items:center; gap:14px; padding:18px 24px; background:var(--color-background-primary); border:0.5px solid var(--color-border-tertiary); border-radius:16px; }
+  .app-name { font-size:30px; font-weight:800; letter-spacing:-0.5px; color:var(--color-text-primary); line-height:1; font-family:var(--font-sans); }
+  .app-name .du { color:#FFB800; }
+  .slogan { font-size:11.5px; color:#E09A00; font-weight:600; margin-top:5px; letter-spacing:0.3px; font-family:var(--font-sans); }
+</style>
+
+<div style="background:var(--color-background-secondary); border-radius:14px; padding:0.5rem 0 1.5rem;">
+  <div class="board">
+
+    <!-- Large icon -->
+    <div class="item">
+      <svg width="160" height="160" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+        <defs><clipPath id="c1"><rect width="160" height="160" rx="36"/></clipPath></defs>
+        <rect width="160" height="160" rx="36" fill="#FFB800"/>
+        <g clip-path="url(#c1)">
+          <!-- Checkmark = ears: white outer -->
+          <path d="M 40,54 L 65,88 L 124,30" stroke="white" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <!-- Checkmark = ears: pink inner -->
+          <path d="M 40,54 L 65,88 L 124,30" stroke="#FFD0E4" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <!-- Head (covers vertex of checkmark) -->
+          <circle cx="80" cy="118" r="44" fill="white"/>
+          <!-- Cheeks -->
+          <ellipse cx="55" cy="124" rx="13" ry="8" fill="#FFB3CC" opacity="0.65"/>
+          <ellipse cx="105" cy="124" rx="13" ry="8" fill="#FFB3CC" opacity="0.65"/>
+          <!-- Eyes -->
+          <circle cx="67" cy="108" r="5.5" fill="#2A2A2A"/>
+          <circle cx="93" cy="108" r="5.5" fill="#2A2A2A"/>
+          <circle cx="69" cy="106" r="2.2" fill="white"/>
+          <circle cx="95" cy="106" r="2.2" fill="white"/>
+        </g>
+      </svg>
+      <span class="lbl">아이콘 (파비콘)</span>
+    </div>
+
+    <!-- 64px preview -->
+    <div class="item" style="align-self:center;">
+      <svg width="64" height="64" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+        <defs><clipPath id="c2"><rect width="160" height="160" rx="36"/></clipPath></defs>
+        <rect width="160" height="160" rx="36" fill="#FFB800"/>
+        <g clip-path="url(#c2)">
+          <path d="M 40,54 L 65,88 L 124,30" stroke="white" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M 40,54 L 65,88 L 124,30" stroke="#FFD0E4" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <circle cx="80" cy="118" r="44" fill="white"/>
+          <ellipse cx="55" cy="124" rx="13" ry="8" fill="#FFB3CC" opacity="0.65"/>
+          <ellipse cx="105" cy="124" rx="13" ry="8" fill="#FFB3CC" opacity="0.65"/>
+          <circle cx="67" cy="108" r="5.5" fill="#2A2A2A"/>
+          <circle cx="93" cy="108" r="5.5" fill="#2A2A2A"/>
+          <circle cx="69" cy="106" r="2.2" fill="white"/>
+          <circle cx="95" cy="106" r="2.2" fill="white"/>
+        </g>
+      </svg>
+      <span class="lbl">64 × 64</span>
+    </div>
+
+    <!-- Wordmark -->
+    <div class="item" style="align-self:center;">
+      <div class="wm">
+        <svg width="52" height="52" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+          <defs><clipPath id="c3"><rect width="160" height="160" rx="36"/></clipPath></defs>
+          <rect width="160" height="160" rx="36" fill="#FFB800"/>
+          <g clip-path="url(#c3)">
+            <path d="M 40,54 L 65,88 L 124,30" stroke="white" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <path d="M 40,54 L 65,88 L 124,30" stroke="#FFD0E4" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <circle cx="80" cy="118" r="44" fill="white"/>
+            <ellipse cx="55" cy="124" rx="13" ry="8" fill="#FFB3CC" opacity="0.65"/>
+            <ellipse cx="105" cy="124" rx="13" ry="8" fill="#FFB3CC" opacity="0.65"/>
+            <circle cx="67" cy="108" r="5.5" fill="#2A2A2A"/>
+            <circle cx="93" cy="108" r="5.5" fill="#2A2A2A"/>
+            <circle cx="69" cy="106" r="2.2" fill="white"/>
+            <circle cx="95" cy="106" r="2.2" fill="white"/>
+          </g>
+        </svg>
+        <div>
+          <div class="app-name"><span class="du">du</span>todo</div>
+          <div class="slogan">do it, dudu!</div>
+        </div>
+      </div>
+      <span class="lbl">워드마크</span>
+    </div>
+
+  </div>
+</div>

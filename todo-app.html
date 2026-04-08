@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Todo</title>
+<title>dutodo</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg width='160' height='160' viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3CclipPath id='c'%3E%3Crect width='160' height='160' rx='36'/%3E%3C/clipPath%3E%3C/defs%3E%3Crect width='160' height='160' rx='36' fill='%23FFB800'/%3E%3Cg clip-path='url(%23c)'%3E%3Cpath d='M40,54 L65,88 L124,30' stroke='white' stroke-width='22' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M40,54 L65,88 L124,30' stroke='%23FFD0E4' stroke-width='11' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Ccircle cx='80' cy='118' r='44' fill='white'/%3E%3Cellipse cx='55' cy='124' rx='13' ry='8' fill='%23FFB3CC' opacity='0.65'/%3E%3Cellipse cx='105' cy='124' rx='13' ry='8' fill='%23FFB3CC' opacity='0.65'/%3E%3Ccircle cx='67' cy='108' r='5.5' fill='%232A2A2A'/%3E%3Ccircle cx='93' cy='108' r='5.5' fill='%232A2A2A'/%3E%3Ccircle cx='69' cy='106' r='2.2' fill='white'/%3E%3Ccircle cx='95' cy='106' r='2.2' fill='white'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -36,6 +37,34 @@
     gap: 16px;
     max-width: 1100px;
     margin: 0 auto;
+  }
+
+  .app-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 2px 4px 4px;
+  }
+
+  .app-logo-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .app-logo-name {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .app-logo-slogan {
+    font-size: 10px;
+    color: #E09A00;
+    font-weight: 600;
+    margin-top: 3px;
+    letter-spacing: 0.3px;
   }
 
   .panel-left {
@@ -238,12 +267,25 @@
 
   .cat-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.09); }
 
+  .cat-card.cat-dragging {
+    opacity: 0.4;
+    box-shadow: none;
+  }
+
+  .cat-card.cat-drag-over {
+    border-top: 3px solid #007AFF;
+    margin-top: -3px;
+  }
+
   .cat-header {
     display: flex;
     align-items: center;
     padding: 14px 16px 12px;
     gap: 8px;
+    cursor: grab;
   }
+
+  .cat-header:active { cursor: grabbing; }
 
   .cat-icon {
     font-size: 18px;
@@ -487,6 +529,15 @@
   }
 
   .todo-text.done {
+    text-decoration: line-through;
+    color: var(--text-muted);
+  }
+
+  .todo-item.expired {
+    opacity: 0.45;
+  }
+
+  .todo-text.expired {
     text-decoration: line-through;
     color: var(--text-muted);
   }
@@ -928,6 +979,27 @@
 <body>
 <div class="app">
   <div class="panel-left">
+    <div class="app-logo">
+      <svg width="32" height="32" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+        <defs><clipPath id="logo-clip"><rect width="160" height="160" rx="36"/></clipPath></defs>
+        <rect width="160" height="160" rx="36" fill="#FFB800"/>
+        <g clip-path="url(#logo-clip)">
+          <path d="M 40,54 L 65,88 L 124,30" stroke="white" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M 40,54 L 65,88 L 124,30" stroke="#FFD0E4" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <circle cx="80" cy="118" r="44" fill="white"/>
+          <ellipse cx="55" cy="124" rx="13" ry="8" fill="#FFB3CC" opacity="0.65"/>
+          <ellipse cx="105" cy="124" rx="13" ry="8" fill="#FFB3CC" opacity="0.65"/>
+          <circle cx="67" cy="108" r="5.5" fill="#2A2A2A"/>
+          <circle cx="93" cy="108" r="5.5" fill="#2A2A2A"/>
+          <circle cx="69" cy="106" r="2.2" fill="white"/>
+          <circle cx="95" cy="106" r="2.2" fill="white"/>
+        </g>
+      </svg>
+      <div class="app-logo-text">
+        <span class="app-logo-name"><span style="color:#FFB800">du</span>todo</span>
+        <span class="app-logo-slogan">do it, dudu!</span>
+      </div>
+    </div>
     <div class="card" id="calendar-card">
       <div class="cal-header">
         <span class="cal-title" id="cal-title"></span>
@@ -1162,6 +1234,29 @@ function getTopCategories() {
   return data.categories.filter(c => c.parentId === null).sort((a, b) => a.order - b.order);
 }
 
+function reorderCategory(draggedId, targetId) {
+  const tops = getTopCategories();
+  const draggedIdx = tops.findIndex(c => c.id === draggedId);
+  const targetIdx = tops.findIndex(c => c.id === targetId);
+  if (draggedIdx === -1 || targetIdx === -1) return;
+
+  // Remove dragged from array, insert before target
+  const ordered = tops.map(c => c.id);
+  ordered.splice(draggedIdx, 1);
+  const newTargetIdx = ordered.indexOf(targetId);
+  ordered.splice(newTargetIdx, 0, draggedId);
+
+  // Update order values
+  ordered.forEach((id, i) => {
+    const cat = data.categories.find(c => c.id === id);
+    if (cat) cat.order = i;
+  });
+
+  saveData();
+  renderTodos();
+  renderCalendar();
+}
+
 function getAllTodoCatIds(catId) {
   // Returns catId + all subcategory ids
   const subs = getSubcategories(catId);
@@ -1334,6 +1429,34 @@ function renderTodos() {
     const card = document.createElement('div');
     card.className = 'cat-card';
     card.dataset.catId = cat.id;
+    card.draggable = true;
+
+    // Category drag & drop
+    card.addEventListener('dragstart', (e) => {
+      if (e.target.closest('.todo-item')) return; // 할일 드래그는 무시
+      e.dataTransfer.setData('application/cat-id', cat.id);
+      card.classList.add('cat-dragging');
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('cat-dragging');
+      document.querySelectorAll('.cat-drag-over').forEach(el => el.classList.remove('cat-drag-over'));
+    });
+    card.addEventListener('dragover', (e) => {
+      if (!e.dataTransfer.types.includes('application/cat-id')) return;
+      e.preventDefault();
+      card.classList.add('cat-drag-over');
+    });
+    card.addEventListener('dragleave', () => {
+      card.classList.remove('cat-drag-over');
+    });
+    card.addEventListener('drop', (e) => {
+      if (!e.dataTransfer.types.includes('application/cat-id')) return;
+      e.preventDefault();
+      card.classList.remove('cat-drag-over');
+      const draggedCatId = e.dataTransfer.getData('application/cat-id');
+      if (draggedCatId === cat.id) return;
+      reorderCategory(draggedCatId, cat.id);
+    });
 
     // Header
     const header = document.createElement('div');
@@ -1473,6 +1596,7 @@ function renderTodos() {
     zone.addEventListener('drop', (e) => {
       e.preventDefault();
       zone.classList.remove('drag-over');
+      if (e.dataTransfer.types.includes('application/cat-id')) return; // 카테고리 드래그 무시
       const todoId = e.dataTransfer.getData('text/plain');
       const todo = data.todos.find(t => t.id === todoId);
       if (todo && todo.categoryId !== targetCatId) {
@@ -1554,6 +1678,9 @@ function makeTodoEl(todo, cat) {
     document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
   });
 
+  // 기한 지난 미완료 항목 판별
+  const isExpired = !todo.done && todo.date < todayStr();
+
   const checkColor = todo.done ? cat.color : 'transparent';
   const borderColor = todo.done ? cat.color : 'var(--border)';
 
@@ -1562,7 +1689,7 @@ function makeTodoEl(todo, cat) {
   if (todo.scheduledTime) metaHtml += `<span class="todo-time">🕐 ${formatTime(todo.scheduledTime)}</span>`;
 
   // 미룬 일수
-  if (todo.createdDate && todo.date !== todo.createdDate && !todo.done) {
+  if (todo.createdDate && todo.date !== todo.createdDate && !todo.done && !isExpired) {
     const created = new Date(todo.createdDate);
     const current = new Date(todo.date);
     const days = Math.round((current - created) / (1000 * 60 * 60 * 24));
@@ -1571,10 +1698,17 @@ function makeTodoEl(todo, cat) {
     }
   }
 
+  // 기한 만료 표시
+  if (isExpired) {
+    item.classList.add('expired');
+  }
+
+  const textClass = todo.done ? 'done' : (isExpired ? 'expired' : '');
+
   item.innerHTML = `
     <div class="todo-check ${todo.done ? 'checked' : ''}" style="background:${checkColor}; border-color:${borderColor}; --cat-color:${cat.color}" data-id="${todo.id}"></div>
     <div class="todo-content">
-      <span class="todo-text ${todo.done ? 'done' : ''}">${escHtml(todo.text)}</span>
+      <span class="todo-text ${textClass}">${escHtml(todo.text)}</span>
       ${metaHtml ? `<div class="todo-meta">${metaHtml}</div>` : ''}
     </div>
     <button class="todo-menu-btn" data-id="${todo.id}">···</button>
