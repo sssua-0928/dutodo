@@ -82,8 +82,17 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    overflow-y: auto;
     padding-right: 2px;
+    min-height: 0;
+  }
+
+  .panel-right #list-view {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;
   }
 
   .panel-right::-webkit-scrollbar { width: 4px; }
@@ -255,6 +264,234 @@
     font-weight: 600;
     padding: 3px 9px;
     border-radius: 20px;
+  }
+
+  /* ── View Toggle ── */
+  .view-toggle {
+    display: flex;
+    gap: 4px;
+    margin-top: 12px;
+    background: var(--bg);
+    padding: 3px;
+    border-radius: 10px;
+  }
+
+  .vt-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-sub);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+
+  .vt-btn.active {
+    background: var(--card);
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .vt-btn:not(.active):hover {
+    color: var(--text);
+  }
+
+  /* ── Timetable ── */
+  #timetable-view {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .tt-scroll {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+  }
+
+  .tt-grid {
+    position: relative;
+  }
+
+  .tt-slot {
+    border-top: 1px solid var(--border);
+  }
+
+  .tt-slot.hour {
+    border-top-color: #d1d1d6;
+  }
+
+  .tt-slot:first-child { border-top: none; }
+
+  .tt-hour-label {
+    position: absolute;
+    left: 0;
+    top: -8px;
+    width: 46px;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-sub);
+    padding-right: 8px;
+    background: var(--card);
+    z-index: 5;
+  }
+
+  .tt-now-line {
+    position: absolute;
+    left: 52px;
+    right: 8px;
+    height: 2px;
+    background: #FF3B30;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .tt-now-line::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: -4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #FF3B30;
+  }
+
+  .tt-block {
+    position: absolute;
+    left: 4px;
+    right: 8px;
+    border-radius: 6px;
+    padding: 4px 6px;
+    font-size: 11px;
+    cursor: grab;
+    user-select: none;
+    overflow: hidden;
+    box-sizing: border-box;
+    background: transparent;
+    border: 1.5px dashed var(--tt-color, #8e8e93);
+    color: var(--text);
+    transition: box-shadow 0.15s;
+  }
+
+  .tt-block:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+
+  .tt-block.dragging { opacity: 0.5; cursor: grabbing; }
+
+  .tt-block .tt-actual-fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    background: var(--tt-color, #8e8e93);
+    opacity: 0.28;
+    pointer-events: none;
+    border-radius: 5px 5px 0 0;
+  }
+
+  .tt-block .tt-over-fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background: #FF3B30;
+    opacity: 0.35;
+    pointer-events: none;
+    border-radius: 0 0 5px 5px;
+  }
+
+  .tt-block .tt-title {
+    position: relative;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+  }
+
+  .tt-block .tt-sub {
+    position: relative;
+    font-size: 9px;
+    color: var(--text-sub);
+    line-height: 1.2;
+    margin-top: 1px;
+  }
+
+  .tt-block.done .tt-title {
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+
+  .tt-block .tt-resize {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 6px;
+    cursor: ns-resize;
+    z-index: 2;
+  }
+
+  .tt-block .tt-resize.top { top: 0; }
+  .tt-block .tt-resize.bottom { bottom: 0; }
+
+  .tt-untimed {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .tt-untimed-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-sub);
+    margin-bottom: 8px;
+    letter-spacing: 0.3px;
+  }
+
+  .tt-untimed-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tt-untimed-chip {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 5px 10px;
+    font-size: 11px;
+    color: var(--text);
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    user-select: none;
+  }
+
+  .tt-untimed-chip:hover { border-color: var(--text-sub); }
+  .tt-untimed-chip.dragging { opacity: 0.5; }
+
+  .tt-untimed-chip .tt-chip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .tt-empty-msg {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
   }
 
   /* ── Category Card ── */
@@ -571,6 +808,36 @@
     font-weight: 600;
     padding: 2px 7px;
     border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .todo-duration .td-arrow {
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .todo-duration .td-actual {
+    color: var(--text);
+  }
+
+  .todo-duration .td-diff {
+    font-size: 9px;
+    padding: 1px 4px;
+    border-radius: 10px;
+    font-weight: 700;
+    margin-left: 2px;
+  }
+
+  .todo-duration .td-diff.over {
+    background: #FFE5E5;
+    color: #FF3B30;
+  }
+
+  .todo-duration .td-diff.under {
+    background: #E8F5E9;
+    color: #34C759;
   }
 
   .todo-delayed {
@@ -917,6 +1184,48 @@
   .modal-actions .btn-save { flex: 1; padding: 12px; font-size: 14px; border-radius: var(--radius-sm); }
   .modal-actions .btn-cancel { padding: 12px 16px; font-size: 14px; border-radius: var(--radius-sm); }
 
+  /* ── Chip List (예상/실제 시간 선택) ── */
+  .chip-list {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 2px 0 6px;
+    scrollbar-width: thin;
+  }
+
+  .chip-list::-webkit-scrollbar { height: 4px; }
+  .chip-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .chip-list .chip {
+    flex-shrink: 0;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-sub);
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: all 0.12s;
+  }
+
+  .chip-list .chip:hover {
+    border-color: var(--text-sub);
+    color: var(--text);
+  }
+
+  .chip-list .chip.selected {
+    background: #1a1a1a;
+    border-color: #1a1a1a;
+    color: #fff;
+  }
+
+  .chip-list .chip.custom {
+    border-style: dashed;
+  }
+
   /* ── Edit Todo Modal ── */
   .edit-todo-modal .form-group .duration-select,
   .edit-todo-modal .form-group .time-input {
@@ -1085,6 +1394,106 @@
     padding: 8px 0;
   }
 
+  /* ── Actual Time Toast ── */
+  .actual-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    padding: 16px 18px;
+    z-index: 2000;
+    min-width: 360px;
+    animation: slideUpToast 0.2s ease;
+  }
+
+  @keyframes slideUpToast {
+    from { transform: translate(-50%, 20px); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
+  }
+
+  .actual-toast .at-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+
+  .actual-toast .at-sub {
+    font-size: 11px;
+    color: var(--text-sub);
+    margin-bottom: 10px;
+  }
+
+  .actual-toast .at-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .actual-toast .at-presets-row {
+    flex-wrap: wrap;
+  }
+
+  .actual-toast .at-input {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    background: var(--bg);
+  }
+
+  .actual-toast .at-input:focus {
+    border-color: #1a1a1a;
+    background: var(--card);
+  }
+
+  .actual-toast .at-save {
+    background: #1a1a1a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .actual-toast .at-preset {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-sub);
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .actual-toast .at-preset:hover {
+    background: var(--card);
+    border-color: var(--text-sub);
+    color: var(--text);
+  }
+
+  .actual-toast .at-skip {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 11px;
+    cursor: pointer;
+    margin-left: auto;
+    font-family: inherit;
+    padding: 5px 8px;
+  }
+
   /* ── Animations ── */
   @keyframes fadeIn {
     from { opacity: 0; }
@@ -1173,9 +1582,16 @@
   <div class="panel-right" id="panel-right">
     <div class="card" style="padding:16px 20px;">
       <div class="date-header" id="date-header"></div>
+      <div class="view-toggle" id="view-toggle">
+        <button class="vt-btn active" data-view="list">📋 리스트</button>
+        <button class="vt-btn" data-view="timetable">📅 타임테이블</button>
+      </div>
     </div>
-    <div id="todo-area"></div>
-    <button class="add-cat-btn" id="add-cat-btn">＋ 카테고리 추가</button>
+    <div id="list-view">
+      <div id="todo-area"></div>
+      <button class="add-cat-btn" id="add-cat-btn">＋ 카테고리 추가</button>
+    </div>
+    <div id="timetable-view" style="display:none;"></div>
   </div>
 </div>
 
@@ -1232,15 +1648,12 @@
       <input class="form-input" type="text" id="edit-text-input">
     </div>
     <div class="form-group">
-      <label class="form-label">소요시간</label>
-      <select class="duration-select" id="edit-duration-input">
-        <option value="">없음</option>
-        <option value="15m">15분</option>
-        <option value="30m">30분</option>
-        <option value="1h">1시간</option>
-        <option value="2h">2시간</option>
-        <option value="3h">3시간</option>
-      </select>
+      <label class="form-label">예상 소요시간</label>
+      <div class="chip-list" id="edit-estimated-chips"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">실제 걸린 시간</label>
+      <div class="chip-list" id="edit-actual-chips"></div>
     </div>
     <div class="form-group">
       <label class="form-label">예정 시간</label>
@@ -1269,6 +1682,25 @@ const DAYS = ['일','월','화','수','목','금','토'];
 const EMOJIS = ['💰','✨','📈','🏋️','📚','🎯','💼','🌸','🎨','🎵','🍳','✈️','💻','📝','🏠','🌙'];
 const COLORS = ['#FFB800','#7C7AEF','#FF6B8A','#34C759','#007AFF','#FF9500','#5AC8FA','#AF52DE','#FF3B30','#00C7BE','#1a1a1a','#8e8e93'];
 
+// 예상/실제 시간 프리셋 (15분 단위)
+const DURATION_PRESETS = [
+  { value: '', label: '없음' },
+  { value: '15m', label: '15분' },
+  { value: '30m', label: '30분' },
+  { value: '45m', label: '45분' },
+  { value: '1h', label: '1시간' },
+  { value: '1h 30m', label: '1시간 30분' },
+  { value: '2h', label: '2시간' },
+  { value: '2h 30m', label: '2시간 30분' },
+  { value: '3h', label: '3시간' }
+];
+
+function localizeDuration(val) {
+  if (!val) return '없음';
+  const found = DURATION_PRESETS.find(p => p.value === val);
+  return found ? found.label : val;
+}
+
 const DEFAULT_DATA = {
   categories: [
     { id: 'cat-1', name: '취준', icon: '💰', color: '#FFB800', order: 0, parentId: null },
@@ -1278,14 +1710,14 @@ const DEFAULT_DATA = {
     { id: 'cat-3', name: '데이터야놀자', icon: '📈', color: '#FF6B8A', order: 2, parentId: null }
   ],
   todos: [
-    { id: 'todo-1', categoryId: 'cat-1-1', text: '면접 준비', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 0, createdDate: '2026-04-07' },
-    { id: 'todo-2', categoryId: 'cat-1-1', text: '보안 기본지식 정리', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 1, createdDate: '2026-04-07' },
-    { id: 'todo-3', categoryId: 'cat-1-2', text: '취준스터디 경신스', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 0, createdDate: '2026-04-07' },
-    { id: 'todo-4', categoryId: 'cat-2', text: '세빈카공', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 0, createdDate: '2026-04-07' },
-    { id: 'todo-5', categoryId: 'cat-2', text: 'e4i2 계획 정리', date: '2026-04-07', done: false, duration: null, scheduledTime: null, order: 1, createdDate: '2026-04-07' },
-    { id: 'todo-6', categoryId: 'cat-3', text: '플파트 회의 준비', date: '2026-04-07', done: false, duration: '15m', scheduledTime: '18:00', order: 0, createdDate: '2026-04-07' },
-    { id: 'todo-7', categoryId: 'cat-3', text: '플파트 회의', date: '2026-04-07', done: false, duration: '1h', scheduledTime: '21:30', order: 1, createdDate: '2026-04-07' },
-    { id: 'todo-8', categoryId: 'cat-3', text: '전체 회의', date: '2026-04-07', done: false, duration: '1h', scheduledTime: null, order: 2, createdDate: '2026-04-07' }
+    { id: 'todo-1', categoryId: 'cat-1-1', text: '면접 준비', date: '2026-04-07', done: false, estimatedTime: null, actualTime: null, scheduledTime: null, order: 0, createdDate: '2026-04-07' },
+    { id: 'todo-2', categoryId: 'cat-1-1', text: '보안 기본지식 정리', date: '2026-04-07', done: false, estimatedTime: null, actualTime: null, scheduledTime: null, order: 1, createdDate: '2026-04-07' },
+    { id: 'todo-3', categoryId: 'cat-1-2', text: '취준스터디 경신스', date: '2026-04-07', done: false, estimatedTime: null, actualTime: null, scheduledTime: null, order: 0, createdDate: '2026-04-07' },
+    { id: 'todo-4', categoryId: 'cat-2', text: '세빈카공', date: '2026-04-07', done: false, estimatedTime: null, actualTime: null, scheduledTime: null, order: 0, createdDate: '2026-04-07' },
+    { id: 'todo-5', categoryId: 'cat-2', text: 'e4i2 계획 정리', date: '2026-04-07', done: false, estimatedTime: null, actualTime: null, scheduledTime: null, order: 1, createdDate: '2026-04-07' },
+    { id: 'todo-6', categoryId: 'cat-3', text: '플파트 회의 준비', date: '2026-04-07', done: false, estimatedTime: '15m', actualTime: null, scheduledTime: '18:00', order: 0, createdDate: '2026-04-07' },
+    { id: 'todo-7', categoryId: 'cat-3', text: '플파트 회의', date: '2026-04-07', done: false, estimatedTime: '1h', actualTime: null, scheduledTime: '21:30', order: 1, createdDate: '2026-04-07' },
+    { id: 'todo-8', categoryId: 'cat-3', text: '전체 회의', date: '2026-04-07', done: false, estimatedTime: '1h', actualTime: null, scheduledTime: null, order: 2, createdDate: '2026-04-07' }
   ]
 };
 
@@ -1297,6 +1729,9 @@ let ctxTodoId = null;
 let ctxSubcatId = null;
 let editingCatId = null;
 let useApi = false;
+let currentView = localStorage.getItem('todoApp_view') || 'list'; // 'list' | 'timetable'
+let ttScrollTop = null; // 타임테이블 스크롤 위치 유지
+let ttInitialScrollDone = false;
 
 // ─── Storage ──────────────────────────────────────────────
 async function loadData() {
@@ -1322,6 +1757,16 @@ async function loadData() {
       data.categories.forEach(c => {
         if (c.archived === undefined) { c.archived = false; migrated = true; }
       });
+      // Migrate: duration → estimatedTime, add actualTime
+      data.todos.forEach(t => {
+        if (t.duration !== undefined) {
+          if (t.estimatedTime === undefined) t.estimatedTime = t.duration;
+          delete t.duration;
+          migrated = true;
+        }
+        if (t.estimatedTime === undefined) { t.estimatedTime = null; migrated = true; }
+        if (t.actualTime === undefined) { t.actualTime = null; migrated = true; }
+      });
       if (migrated) saveData();
     }
   } catch (e) {
@@ -1335,6 +1780,16 @@ async function loadData() {
       data = JSON.parse(raw);
       data.categories.forEach(c => {
         if (c.parentId === undefined) c.parentId = null;
+        if (c.archived === undefined) c.archived = false;
+      });
+      data.todos.forEach(t => {
+        if (t.duration !== undefined) {
+          if (t.estimatedTime === undefined) t.estimatedTime = t.duration;
+          delete t.duration;
+        }
+        if (t.estimatedTime === undefined) t.estimatedTime = null;
+        if (t.actualTime === undefined) t.actualTime = null;
+        if (!t.createdDate) t.createdDate = t.date;
       });
     }
   }
@@ -1456,6 +1911,61 @@ function formatTime(t) {
   return `${ampm} ${hh}:${String(min).padStart(2,'0')}`;
 }
 
+// duration 문자열 ↔ 분 단위 변환
+// 지원 포맷: '15m', '30m', '1h', '2h', '1h 30m', '2h 15m', ...
+function parseDuration(str) {
+  if (!str) return 0;
+  if (typeof str === 'number') return str;
+  let total = 0;
+  const hMatch = str.match(/(\d+)\s*h/);
+  const mMatch = str.match(/(\d+)\s*m/);
+  if (hMatch) total += parseInt(hMatch[1]) * 60;
+  if (mMatch) total += parseInt(mMatch[1]);
+  return total;
+}
+
+function formatDuration(min) {
+  if (!min || min <= 0) return '';
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+}
+
+function formatDurationSigned(min) {
+  if (min === 0) return '0m';
+  const sign = min > 0 ? '+' : '−';
+  return sign + formatDuration(Math.abs(min));
+}
+
+// 인라인 소요시간 뱃지: ⏱ 15m → 2h (+1h 45m)
+function renderDurationBadge(todo) {
+  const est = todo.estimatedTime;
+  const act = todo.actualTime;
+  if (!est && !act) return '';
+
+  const estMin = parseDuration(est);
+  const actMin = parseDuration(act);
+
+  // 예상만 있는 경우
+  if (est && !act) {
+    return `<span class="todo-duration">⏱ ${est}</span>`;
+  }
+  // 실제만 있는 경우 (예상 없이 완료한 케이스)
+  if (!est && act) {
+    return `<span class="todo-duration"><span class="td-actual">⏱ ${act}</span></span>`;
+  }
+  // 둘 다 있는 경우: 예상 → 실제 (+/-차이)
+  const diff = actMin - estMin;
+  let diffHtml = '';
+  if (diff !== 0) {
+    const cls = diff > 0 ? 'over' : 'under';
+    diffHtml = `<span class="td-diff ${cls}">${formatDurationSigned(diff)}</span>`;
+  }
+  return `<span class="todo-duration">⏱ ${est}<span class="td-arrow">→</span><span class="td-actual">${act}</span>${diffHtml}</span>`;
+}
+
 // ─── Calendar ─────────────────────────────────────────────
 function initCalendar() {
   const today = new Date();
@@ -1567,6 +2077,374 @@ function renderStats() {
   document.getElementById('progress-fill').style.width = pct + '%';
 }
 
+// ─── View Toggle ──────────────────────────────────────────
+function applyViewMode() {
+  const listEl = document.getElementById('list-view');
+  const ttEl = document.getElementById('timetable-view');
+  const btns = document.querySelectorAll('.vt-btn');
+  if (currentView === 'timetable') {
+    listEl.style.display = 'none';
+    ttEl.style.display = 'flex';
+  } else {
+    listEl.style.display = 'flex';
+    ttEl.style.display = 'none';
+  }
+  btns.forEach(b => b.classList.toggle('active', b.dataset.view === currentView));
+}
+
+function setView(view) {
+  currentView = view;
+  localStorage.setItem('todoApp_view', view);
+  // 타임테이블로 전환 시 초기 스크롤 다시 수행
+  if (view === 'timetable') ttInitialScrollDone = false;
+  renderTodos();
+}
+
+// ─── Timetable ────────────────────────────────────────────
+const TT_PX_PER_HOUR = 72;      // 1시간 = 72px (30분 = 36px, 15분 = 18px)
+const TT_PX_PER_MIN = TT_PX_PER_HOUR / 60;
+const TT_SNAP_MIN = 15;
+
+function parseHHMMtoMin(hhmm) {
+  if (!hhmm) return null;
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function minToHHMM(min) {
+  min = Math.max(0, Math.min(24 * 60 - 1, min));
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+}
+
+function snapMin(min) {
+  return Math.round(min / TT_SNAP_MIN) * TT_SNAP_MIN;
+}
+
+// 겹침 그룹 계산: 동시에 존재하는 블록들을 같은 그룹으로 묶음
+function computeOverlapGroups(items) {
+  // items: [{ start, end, ...todo }]
+  // 각 아이템에 col(열 번호)과 cols(총 열 수) 할당
+  const sorted = [...items].sort((a, b) => a.start - b.start || a.end - b.end);
+  const groups = [];
+  let current = [];
+  let currentEnd = 0;
+
+  for (const it of sorted) {
+    if (current.length === 0 || it.start < currentEnd) {
+      current.push(it);
+      currentEnd = Math.max(currentEnd, it.end);
+    } else {
+      groups.push(current);
+      current = [it];
+      currentEnd = it.end;
+    }
+  }
+  if (current.length) groups.push(current);
+
+  // 각 그룹 내부에서 열 배정 (greedy)
+  for (const group of groups) {
+    const columns = []; // 각 column의 마지막 end
+    for (const it of group) {
+      let placed = false;
+      for (let i = 0; i < columns.length; i++) {
+        if (columns[i] <= it.start) {
+          it.col = i;
+          columns[i] = it.end;
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        it.col = columns.length;
+        columns.push(it.end);
+      }
+    }
+    const total = columns.length;
+    group.forEach(it => { it.cols = total; });
+  }
+  return items;
+}
+
+function renderTimetable() {
+  const container = document.getElementById('timetable-view');
+  // 기존 스크롤 위치 저장
+  const prevScroll = document.getElementById('tt-scroll');
+  if (prevScroll) ttScrollTop = prevScroll.scrollTop;
+  const todos = data.todos.filter(t => t.date === selectedDate);
+
+  // 시간 있는 / 시간 미정 분리
+  const timed = [];
+  const untimed = [];
+  for (const todo of todos) {
+    if (todo.scheduledTime) {
+      const start = parseHHMMtoMin(todo.scheduledTime);
+      // 높이 계산: actualTime 우선, 없으면 estimatedTime, 없으면 30분
+      const estMin = parseDuration(todo.estimatedTime) || 0;
+      const actMin = parseDuration(todo.actualTime) || 0;
+      const visualMin = Math.max(estMin, actMin) || 30;
+      let end = start + visualMin;
+      if (end > 24 * 60) end = 24 * 60; // 자정 컷
+      timed.push({ todo, start, end, estMin, actMin, hasEst: !!todo.estimatedTime });
+    } else {
+      untimed.push(todo);
+    }
+  }
+  computeOverlapGroups(timed);
+
+  // 그리드 빌드: 30분 단위 슬롯 48개 (15분 단위는 블록이 반 칸으로 표현)
+  const slotHeight = TT_PX_PER_HOUR / 2; // 30min
+  let gridHtml = '<div class="tt-grid" id="tt-grid" style="height:' + (24 * TT_PX_PER_HOUR) + 'px">';
+  for (let i = 0; i < 48; i++) {
+    const minFromMidnight = i * 30;
+    const isHourMark = (minFromMidnight % 60 === 0);
+    const hour = Math.floor(minFromMidnight / 60);
+    const top = i * slotHeight;
+    const labelHtml = isHourMark ? `<div class="tt-hour-label">${hour}</div>` : '';
+    gridHtml += `<div class="tt-slot${isHourMark ? ' hour' : ' half'}" style="top:${top}px;position:absolute;left:0;right:0;height:${slotHeight}px;">
+      ${labelHtml}
+    </div>`;
+  }
+  // 현재 시각 라인 (오늘인 경우만)
+  if (selectedDate === todayStr()) {
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    gridHtml += `<div class="tt-now-line" style="top:${nowMin * TT_PX_PER_MIN}px"></div>`;
+  }
+  // 블록
+  timed.forEach(item => {
+    gridHtml += renderTimetableBlock(item);
+  });
+  gridHtml += '</div>';
+
+  // 시간 미정 섹션
+  let untimedHtml = '';
+  if (untimed.length > 0) {
+    untimedHtml = '<div class="tt-untimed"><div class="tt-untimed-title">⏰ 시간 미정</div><div class="tt-untimed-list">';
+    untimed.forEach(todo => {
+      const cat = findCategoryForTodo(todo);
+      const color = cat ? cat.color : '#8e8e93';
+      untimedHtml += `<div class="tt-untimed-chip" data-id="${todo.id}" draggable="true">
+        <span class="tt-chip-dot" style="background:${color}"></span>
+        ${escHtml(todo.text)}
+      </div>`;
+    });
+    untimedHtml += '</div></div>';
+  }
+
+  container.innerHTML = `<div class="tt-scroll" id="tt-scroll">${gridHtml}</div>${untimedHtml}`;
+
+  const scrollEl = document.getElementById('tt-scroll');
+  if (scrollEl) {
+    if (!ttInitialScrollDone && selectedDate === todayStr()) {
+      // 최초 진입: 현재 시각을 중앙에 오게
+      const now = new Date();
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+      scrollEl.scrollTop = Math.max(0, nowMin * TT_PX_PER_MIN - scrollEl.clientHeight / 2);
+      ttInitialScrollDone = true;
+    } else if (ttScrollTop !== null) {
+      // 재렌더: 기존 스크롤 위치 복원
+      scrollEl.scrollTop = ttScrollTop;
+    }
+  }
+
+  wireTimetableInteractions();
+}
+
+function findCategoryForTodo(todo) {
+  const cat = data.categories.find(c => c.id === todo.categoryId);
+  if (!cat) return null;
+  return cat.parentId ? data.categories.find(c => c.id === cat.parentId) : cat;
+}
+
+function renderTimetableBlock(item) {
+  const { todo, start, end, estMin, actMin, hasEst } = item;
+  const cat = findCategoryForTodo(todo);
+  const color = cat ? cat.color : '#8e8e93';
+  const top = start * TT_PX_PER_MIN;
+  const height = Math.max(18, (end - start) * TT_PX_PER_MIN);
+  const widthPct = 100 / item.cols;
+  const leftPct = item.col * widthPct;
+
+  // 실제시간 채움: actualMin만큼 위에서부터
+  let fills = '';
+  if (actMin > 0 && estMin > 0) {
+    const actualFillH = Math.min(actMin, estMin) * TT_PX_PER_MIN;
+    fills += `<div class="tt-actual-fill" style="height:${actualFillH}px"></div>`;
+    if (actMin > estMin) {
+      const overH = (actMin - estMin) * TT_PX_PER_MIN;
+      const overTop = estMin * TT_PX_PER_MIN;
+      fills += `<div class="tt-over-fill" style="top:${overTop}px;height:${overH}px"></div>`;
+    }
+  } else if (actMin > 0 && !estMin) {
+    const h = actMin * TT_PX_PER_MIN;
+    fills += `<div class="tt-actual-fill" style="height:${h}px"></div>`;
+  }
+
+  const doneClass = todo.done ? ' done' : '';
+  const subInfo = todo.estimatedTime
+    ? (todo.actualTime ? `${todo.estimatedTime} → ${todo.actualTime}` : todo.estimatedTime)
+    : (todo.actualTime ? todo.actualTime : '미정 30m');
+
+  // 블록은 52px offset(라벨 영역) 이후부터 배치
+  const colFrac = item.col / item.cols;
+  const leftCss = `calc(52px + (100% - 52px) * ${colFrac} + 4px)`;
+  const widthCss = `calc((100% - 52px) / ${item.cols} - 12px)`;
+
+  return `<div class="tt-block${doneClass}" data-id="${todo.id}"
+    style="top:${top}px;height:${height}px;left:${leftCss};width:${widthCss};--tt-color:${color};">
+    <div class="tt-resize top"></div>
+    ${fills}
+    <div class="tt-title">${escHtml(todo.text)}</div>
+    <div class="tt-sub">${formatTime(todo.scheduledTime)} · ${subInfo}</div>
+    <div class="tt-resize bottom"></div>
+  </div>`;
+}
+
+function wireTimetableInteractions() {
+  // 블록 클릭 → 수정 모달
+  document.querySelectorAll('.tt-block').forEach(block => {
+    block.addEventListener('click', (e) => {
+      if (e.target.classList.contains('tt-resize')) return;
+      if (block.dataset.dragged === '1') { block.dataset.dragged = ''; return; }
+      showEditModal(block.dataset.id);
+    });
+    attachBlockDrag(block);
+    attachBlockResize(block);
+  });
+  // 시간 미정 칩 → 드래그로 타임축에 놓기
+  document.querySelectorAll('.tt-untimed-chip').forEach(chip => {
+    attachUntimedChipDrag(chip);
+  });
+}
+
+// 블록 이동 (native mouse events; 15분 스냅)
+function attachBlockDrag(block) {
+  const header = block; // 전체 블록이 드래그 핸들, 단 resize는 제외
+  header.addEventListener('mousedown', (e) => {
+    if (e.target.classList.contains('tt-resize')) return;
+    e.preventDefault();
+    const todo = data.todos.find(t => t.id === block.dataset.id);
+    if (!todo) return;
+    const startY = e.clientY;
+    const origMin = parseHHMMtoMin(todo.scheduledTime);
+    let moved = false;
+    const onMove = (ev) => {
+      const dy = ev.clientY - startY;
+      if (Math.abs(dy) > 3) moved = true;
+      const deltaMin = snapMin(dy / TT_PX_PER_MIN);
+      let newMin = origMin + deltaMin;
+      newMin = Math.max(0, Math.min(24 * 60 - 15, newMin));
+      block.style.top = (newMin * TT_PX_PER_MIN) + 'px';
+      block.dataset.newMin = newMin;
+    };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      if (moved && block.dataset.newMin !== undefined) {
+        todo.scheduledTime = minToHHMM(parseInt(block.dataset.newMin));
+        saveData();
+        renderTodos();
+        block.dataset.dragged = '1';
+      }
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+}
+
+// 블록 리사이즈 (위/아래 엣지)
+function attachBlockResize(block) {
+  block.querySelectorAll('.tt-resize').forEach(handle => {
+    handle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const todo = data.todos.find(t => t.id === block.dataset.id);
+      if (!todo) return;
+      const isTop = handle.classList.contains('top');
+      const startY = e.clientY;
+      const origTop = parseFloat(block.style.top);
+      const origHeight = parseFloat(block.style.height);
+      const startMin = parseHHMMtoMin(todo.scheduledTime);
+      const origMin = parseDuration(todo.estimatedTime || todo.actualTime) || 30;
+
+      const onMove = (ev) => {
+        const dy = ev.clientY - startY;
+        const deltaMin = snapMin(dy / TT_PX_PER_MIN);
+        if (isTop) {
+          let newStartMin = Math.max(0, snapMin(startMin + deltaMin));
+          let newDurMin = origMin - (newStartMin - startMin);
+          if (newDurMin < 15) newDurMin = 15;
+          block.style.top = (newStartMin * TT_PX_PER_MIN) + 'px';
+          block.style.height = (newDurMin * TT_PX_PER_MIN) + 'px';
+          block.dataset.newStart = newStartMin;
+          block.dataset.newDur = newDurMin;
+        } else {
+          let newDurMin = Math.max(15, origMin + deltaMin);
+          if (startMin + newDurMin > 24 * 60) newDurMin = 24 * 60 - startMin;
+          block.style.height = (newDurMin * TT_PX_PER_MIN) + 'px';
+          block.dataset.newDur = newDurMin;
+        }
+      };
+      const onUp = () => {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        const newDurMin = parseInt(block.dataset.newDur);
+        const newStartMin = block.dataset.newStart !== undefined ? parseInt(block.dataset.newStart) : startMin;
+        if (!isNaN(newDurMin)) {
+          const newDurStr = formatDuration(newDurMin);
+          // 규칙: estimatedTime 없으면 생성, 있으면 actualTime 기록
+          if (!todo.estimatedTime) {
+            todo.estimatedTime = newDurStr;
+          } else {
+            todo.actualTime = newDurStr;
+          }
+          if (isTop) todo.scheduledTime = minToHHMM(newStartMin);
+          saveData();
+          renderTodos();
+        }
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+}
+
+// 시간 미정 칩 → 타임축에 드래그 앤 드롭
+function attachUntimedChipDrag(chip) {
+  chip.addEventListener('dragstart', (e) => {
+    e.dataTransfer.setData('application/untimed-id', chip.dataset.id);
+    chip.classList.add('dragging');
+  });
+  chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+}
+
+// 그리드에 드롭 받기
+function wireTimetableGridDrop() {
+  document.addEventListener('dragover', (e) => {
+    if (e.dataTransfer.types.includes('application/untimed-id')) {
+      const grid = document.getElementById('tt-grid');
+      if (grid && grid.contains(e.target)) e.preventDefault();
+    }
+  });
+  document.addEventListener('drop', (e) => {
+    if (!e.dataTransfer.types.includes('application/untimed-id')) return;
+    const grid = document.getElementById('tt-grid');
+    if (!grid || !grid.contains(e.target)) return;
+    e.preventDefault();
+    const id = e.dataTransfer.getData('application/untimed-id');
+    const todo = data.todos.find(t => t.id === id);
+    if (!todo) return;
+    const rect = grid.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const min = snapMin(y / TT_PX_PER_MIN);
+    todo.scheduledTime = minToHHMM(Math.max(0, Math.min(24 * 60 - 15, min)));
+    saveData();
+    renderTodos();
+  });
+}
+
 // ─── Timeline ─────────────────────────────────────────────
 function renderTimeline() {
   const container = document.getElementById('timeline-card');
@@ -1600,7 +2478,9 @@ function renderTimeline() {
     const doneClass = todo.done ? ' tl-done' : '';
     const checkedClass = todo.done ? ' tl-checked' : '';
     const checkBg = todo.done ? `background:${color};` : '';
-    const durationStr = todo.duration ? ` · ${todo.duration}` : '';
+    const durationStr = todo.estimatedTime || todo.actualTime
+      ? ` · ${todo.actualTime || todo.estimatedTime}${todo.actualTime && todo.estimatedTime ? ' (예상 '+todo.estimatedTime+')' : ''}`
+      : '';
 
     html += `
       <div class="tl-item">
@@ -1641,6 +2521,11 @@ function renderTodos() {
   renderDateHeader();
   renderStats();
   renderTimeline();
+  applyViewMode();
+
+  if (currentView === 'timetable') {
+    renderTimetable();
+  }
 
   const area = document.getElementById('todo-area');
   area.innerHTML = '';
@@ -1945,7 +2830,8 @@ function makeTodoEl(todo, cat) {
   const borderColor = todo.done ? cat.color : 'var(--border)';
 
   let metaHtml = '';
-  if (todo.duration) metaHtml += `<span class="todo-duration">${todo.duration}</span>`;
+  const durHtml = renderDurationBadge(todo);
+  if (durHtml) metaHtml += durHtml;
   if (todo.scheduledTime) metaHtml += `<span class="todo-time">🕐 ${formatTime(todo.scheduledTime)}</span>`;
 
   // 미룬 일수
@@ -1998,11 +2884,12 @@ function makeInlineAddForm(catId) {
     <div class="inline-add-row">
       <select class="duration-select">
         <option value="">시간 없음</option>
-        <option value="15m">15분</option>
-        <option value="30m">30분</option>
-        <option value="1h">1시간</option>
-        <option value="2h">2시간</option>
-        <option value="3h">3시간</option>
+        <option value="15m">15m</option>
+        <option value="30m">30m</option>
+        <option value="1h">1h</option>
+        <option value="1h 30m">1h 30m</option>
+        <option value="2h">2h</option>
+        <option value="3h">3h</option>
       </select>
       <div class="time-picker-inline">
         <select class="inline-ampm"><option value="">없음</option><option value="오전">오전</option><option value="오후">오후</option></select>
@@ -2020,13 +2907,13 @@ function makeInlineAddForm(catId) {
   form.querySelector('.btn-save').addEventListener('click', () => {
     const text = form.querySelector('.add-text-input').value.trim();
     if (!text) return;
-    const duration = form.querySelector('.duration-select').value || null;
+    const estimatedTime = form.querySelector('.duration-select').value || null;
     const scheduledTime = getTimePickerValue(
       form.querySelector('.inline-ampm'),
       form.querySelector('.inline-hour'),
       form.querySelector('.inline-min')
     );
-    addTodo(catId, text, duration, scheduledTime);
+    addTodo(catId, text, estimatedTime, scheduledTime);
     hideInlineAdd(catId);
   });
 
@@ -2068,7 +2955,14 @@ function hideInlineAdd(catId) {
 function toggleTodo(id, el) {
   const todo = data.todos.find(t => t.id === id);
   if (!todo) return;
+  const wasNotDone = !todo.done;
   todo.done = !todo.done;
+
+  // 완료 전환 시: 실제시간 입력 프롬프트 (예상시간 있고 실제시간 없을 때만)
+  if (wasNotDone && todo.estimatedTime && !todo.actualTime) {
+    showActualTimePrompt(todo);
+  }
+
   saveData();
   el.classList.add('check-pop');
   el.addEventListener('animationend', () => el.classList.remove('check-pop'), { once: true });
@@ -2077,7 +2971,61 @@ function toggleTodo(id, el) {
   renderCalendar();
 }
 
-function addTodo(catId, text, duration, scheduledTime) {
+// 작은 프롬프트 (토스트 형식): 실제 걸린 시간 빠르게 입력
+function showActualTimePrompt(todo) {
+  // 기존 토스트 제거
+  const existing = document.getElementById('actual-time-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'actual-time-toast';
+  toast.className = 'actual-toast';
+  toast.innerHTML = `
+    <div class="at-title">실제로 얼마나 걸렸어요?</div>
+    <div class="at-sub">예상: ${todo.estimatedTime}</div>
+    <div class="at-row">
+      <button class="at-preset" data-val="${todo.estimatedTime}">예상대로</button>
+      <input type="text" class="at-input" placeholder="예: 1h 30m">
+      <button class="at-save">저장</button>
+    </div>
+    <div class="at-row at-presets-row">
+      <button class="at-preset" data-val="15m">15m</button>
+      <button class="at-preset" data-val="30m">30m</button>
+      <button class="at-preset" data-val="1h">1h</button>
+      <button class="at-preset" data-val="1h 30m">1h 30m</button>
+      <button class="at-preset" data-val="2h">2h</button>
+      <button class="at-skip">나중에</button>
+    </div>
+  `;
+  document.body.appendChild(toast);
+
+  const input = toast.querySelector('.at-input');
+  setTimeout(() => input.focus(), 50);
+
+  const save = (val) => {
+    if (val) {
+      const normalized = formatDuration(parseDuration(val));
+      if (normalized) {
+        todo.actualTime = normalized;
+        saveData();
+        renderTodos();
+      }
+    }
+    toast.remove();
+  };
+
+  toast.querySelector('.at-save').addEventListener('click', () => save(input.value.trim()));
+  toast.querySelector('.at-skip').addEventListener('click', () => toast.remove());
+  toast.querySelectorAll('.at-preset').forEach(btn => {
+    btn.addEventListener('click', () => save(btn.dataset.val));
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') save(input.value.trim());
+    if (e.key === 'Escape') toast.remove();
+  });
+}
+
+function addTodo(catId, text, estimatedTime, scheduledTime) {
   const catTodos = data.todos.filter(t => t.categoryId === catId && t.date === selectedDate);
   const maxOrder = catTodos.reduce((m, t) => Math.max(m, t.order), -1);
   data.todos.push({
@@ -2086,7 +3034,8 @@ function addTodo(catId, text, duration, scheduledTime) {
     text,
     date: selectedDate,
     done: false,
-    duration: duration || null,
+    estimatedTime: estimatedTime || null,
+    actualTime: null,
     scheduledTime: scheduledTime || null,
     order: maxOrder + 1,
     createdDate: selectedDate
@@ -2103,11 +3052,12 @@ function deleteTodo(id) {
   renderCalendar();
 }
 
-function editTodo(id, text, duration, scheduledTime) {
+function editTodo(id, text, estimatedTime, actualTime, scheduledTime) {
   const todo = data.todos.find(t => t.id === id);
   if (!todo) return;
   todo.text = text;
-  todo.duration = duration || null;
+  todo.estimatedTime = estimatedTime || null;
+  todo.actualTime = actualTime || null;
   todo.scheduledTime = scheduledTime || null;
   saveData();
   renderTodos();
@@ -2346,12 +3296,37 @@ document.getElementById('subcat-ctx-delete').addEventListener('click', () => {
 // ─── Edit Modal ───────────────────────────────────────────
 let editingTodoId = null;
 
+function buildChipList(container, currentValue) {
+  container.innerHTML = '';
+  const selected = currentValue || '';
+  // 프리셋 + 비표준 값(리사이즈로 생긴 '1h 45m' 등) 있으면 끝에 추가
+  const items = [...DURATION_PRESETS];
+  if (selected && !items.some(p => p.value === selected)) {
+    items.push({ value: selected, label: selected, custom: true });
+  }
+  items.forEach(it => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'chip' + (it.value === selected ? ' selected' : '') + (it.custom ? ' custom' : '');
+    chip.textContent = it.label;
+    chip.dataset.value = it.value;
+    chip.addEventListener('click', () => {
+      container.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      container.dataset.value = it.value;
+    });
+    container.appendChild(chip);
+  });
+  container.dataset.value = selected;
+}
+
 function showEditModal(id) {
   const todo = data.todos.find(t => t.id === id);
   if (!todo) return;
   editingTodoId = id;
   document.getElementById('edit-text-input').value = todo.text;
-  document.getElementById('edit-duration-input').value = todo.duration || '';
+  buildChipList(document.getElementById('edit-estimated-chips'), todo.estimatedTime || '');
+  buildChipList(document.getElementById('edit-actual-chips'), todo.actualTime || '');
   setupTimePicker(
     document.getElementById('edit-time-ampm'),
     document.getElementById('edit-time-hour'),
@@ -2365,13 +3340,14 @@ function showEditModal(id) {
 document.getElementById('edit-save').addEventListener('click', () => {
   const text = document.getElementById('edit-text-input').value.trim();
   if (!text) return;
-  const duration = document.getElementById('edit-duration-input').value;
+  const estimatedTime = document.getElementById('edit-estimated-chips').dataset.value || null;
+  const actualTime = document.getElementById('edit-actual-chips').dataset.value || null;
   const time = getTimePickerValue(
     document.getElementById('edit-time-ampm'),
     document.getElementById('edit-time-hour'),
     document.getElementById('edit-time-min')
   );
-  editTodo(editingTodoId, text, duration, time);
+  editTodo(editingTodoId, text, estimatedTime, actualTime, time);
   document.getElementById('edit-modal').classList.remove('show');
   editingTodoId = null;
 });
@@ -2472,6 +3448,11 @@ document.getElementById('cat-modal').addEventListener('click', (e) => {
   }
 });
 
+// ─── View Toggle Buttons ──────────────────────────────────
+document.querySelectorAll('.vt-btn').forEach(btn => {
+  btn.addEventListener('click', () => setView(btn.dataset.view));
+});
+
 // ─── Calendar Navigation ──────────────────────────────────
 document.getElementById('cal-prev').addEventListener('click', () => {
   calMonth--;
@@ -2566,6 +3547,7 @@ function escHtml(str) {
     initCalendar();
     renderCalendar();
     renderTodos();
+    wireTimetableGridDrop();
     console.log('Init complete');
   } catch(e) {
     console.error('Init error:', e);
