@@ -487,6 +487,87 @@
     flex-shrink: 0;
   }
 
+  /* ── 미배치 섹션 ── */
+  .tt-unplaced {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .tt-unplaced-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .tt-unplaced-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .tt-unplaced-summary {
+    display: flex;
+    gap: 6px;
+  }
+
+  .tt-unplaced-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: var(--border);
+    color: var(--text-sub);
+  }
+
+  .tt-unplaced-badge.warning {
+    background: #FFE5E5;
+    color: #FF3B30;
+  }
+
+  .tt-unplaced-blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .tt-unplaced-block {
+    border: 1.5px dashed var(--tt-color, #8e8e93);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: grab;
+    user-select: none;
+    overflow: hidden;
+    box-sizing: border-box;
+    background: transparent;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    transition: box-shadow 0.15s;
+  }
+
+  .tt-unplaced-block:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .tt-unplaced-block.dragging { opacity: 0.5; cursor: grabbing; }
+
+  .tt-unplaced-block .tt-title {
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+  }
+
+  .tt-unplaced-block .tt-sub {
+    font-size: 10px;
+    color: var(--text-sub);
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+
   .tt-empty-msg {
     padding: 40px 20px;
     text-align: center;
@@ -1685,6 +1766,7 @@ const COLORS = ['#FFB800','#7C7AEF','#FF6B8A','#34C759','#007AFF','#FF9500','#5A
 // 예상/실제 시간 프리셋 (15분 단위)
 const DURATION_PRESETS = [
   { value: '', label: '없음' },
+  { value: '5m', label: '5분' },
   { value: '15m', label: '15분' },
   { value: '30m', label: '30분' },
   { value: '45m', label: '45분' },
@@ -2218,22 +2300,65 @@ function renderTimetable() {
   });
   gridHtml += '</div>';
 
-  // 시간 미정 섹션
-  let untimedHtml = '';
+  // 미배치 섹션 (estimatedTime 있는 할일 = 블록, 없는 할일 = 칩)
+  let unplacedHtml = '';
   if (untimed.length > 0) {
-    untimedHtml = '<div class="tt-untimed"><div class="tt-untimed-title">⏰ 시간 미정</div><div class="tt-untimed-list">';
-    untimed.forEach(todo => {
-      const cat = findCategoryForTodo(todo);
-      const color = cat ? cat.color : '#8e8e93';
-      untimedHtml += `<div class="tt-untimed-chip" data-id="${todo.id}" draggable="true">
-        <span class="tt-chip-dot" style="background:${color}"></span>
-        ${escHtml(todo.text)}
-      </div>`;
-    });
-    untimedHtml += '</div></div>';
+    const withEst = untimed.filter(t => parseDuration(t.estimatedTime) > 0);
+    const noEst = untimed.filter(t => !parseDuration(t.estimatedTime));
+
+    // 합계 계산
+    const totalUnplacedMin = withEst.reduce((s, t) => s + parseDuration(t.estimatedTime), 0);
+    const totalScheduledMin = timed.reduce((s, it) => s + (it.end - it.start), 0);
+    const availableMin = Math.max(0, 24 * 60 - totalScheduledMin);
+    const isOverflow = totalUnplacedMin > availableMin;
+
+    // 헤더
+    let headerHtml = '<div class="tt-unplaced-header">';
+    headerHtml += '<span class="tt-unplaced-title">미배치</span>';
+    headerHtml += '<div class="tt-unplaced-summary">';
+    if (totalUnplacedMin > 0) {
+      headerHtml += `<span class="tt-unplaced-badge${isOverflow ? ' warning' : ''}">${formatDuration(totalUnplacedMin)}</span>`;
+    }
+    headerHtml += `<span class="tt-unplaced-badge">빈 시간 ${formatDuration(availableMin)}</span>`;
+    headerHtml += '</div></div>';
+
+    // 블록 (estimatedTime 있는 할일)
+    let blocksHtml = '';
+    if (withEst.length > 0) {
+      blocksHtml = '<div class="tt-unplaced-blocks">';
+      withEst.forEach(todo => {
+        const cat = findCategoryForTodo(todo);
+        const color = cat ? cat.color : '#8e8e93';
+        const estMin = parseDuration(todo.estimatedTime);
+        const height = Math.max(24, estMin * TT_PX_PER_MIN);
+        blocksHtml += `<div class="tt-unplaced-block" data-id="${todo.id}" draggable="true"
+          style="height:${height}px;--tt-color:${color};">
+          <div class="tt-title">${escHtml(todo.text)}</div>
+          <div class="tt-sub">${todo.estimatedTime}</div>
+        </div>`;
+      });
+      blocksHtml += '</div>';
+    }
+
+    // 칩 (estimatedTime 없는 할일)
+    let chipsHtml = '';
+    if (noEst.length > 0) {
+      chipsHtml = '<div class="tt-untimed-list">';
+      noEst.forEach(todo => {
+        const cat = findCategoryForTodo(todo);
+        const color = cat ? cat.color : '#8e8e93';
+        chipsHtml += `<div class="tt-untimed-chip" data-id="${todo.id}" draggable="true">
+          <span class="tt-chip-dot" style="background:${color}"></span>
+          ${escHtml(todo.text)}
+        </div>`;
+      });
+      chipsHtml += '</div>';
+    }
+
+    unplacedHtml = `<div class="tt-unplaced">${headerHtml}${blocksHtml}${chipsHtml}</div>`;
   }
 
-  container.innerHTML = `<div class="tt-scroll" id="tt-scroll">${gridHtml}</div>${untimedHtml}`;
+  container.innerHTML = `<div class="tt-scroll" id="tt-scroll">${gridHtml}</div>${unplacedHtml}`;
 
   const scrollEl = document.getElementById('tt-scroll');
   if (scrollEl) {
@@ -2313,9 +2438,10 @@ function wireTimetableInteractions() {
     attachBlockDrag(block);
     attachBlockResize(block);
   });
-  // 시간 미정 칩 → 드래그로 타임축에 놓기
-  document.querySelectorAll('.tt-untimed-chip').forEach(chip => {
-    attachUntimedChipDrag(chip);
+  // 미배치 블록 + 칩 → 클릭(수정 모달) + 드래그(타임축에 놓기)
+  document.querySelectorAll('.tt-unplaced-block, .tt-untimed-chip').forEach(el => {
+    attachUntimedChipDrag(el);
+    el.addEventListener('click', () => showEditModal(el.dataset.id));
   });
 }
 
@@ -2714,15 +2840,17 @@ function renderTodos() {
       if (e.dataTransfer.types.includes('application/cat-id')) return; // 카테고리 드래그 무시
       const todoId = e.dataTransfer.getData('text/plain');
       const todo = data.todos.find(t => t.id === todoId);
-      if (todo && todo.categoryId !== targetCatId) {
+      if (!todo) return;
+      if (todo.categoryId !== targetCatId) {
+        // 다른 카테고리에서 옮겨온 경우
         todo.categoryId = targetCatId;
-        // Reset order to end
-        const siblings = data.todos.filter(t => t.categoryId === targetCatId && t.date === selectedDate);
-        todo.order = siblings.reduce((m, t) => Math.max(m, t.order), -1) + 1;
-        saveData();
-        renderTodos();
-        renderCalendar();
       }
+      // 같은 카테고리든 다른 카테고리든 맨 뒤로 배치
+      const siblings = data.todos.filter(t => t.categoryId === targetCatId && t.date === selectedDate && t.id !== todo.id);
+      todo.order = siblings.reduce((m, t) => Math.max(m, t.order), -1) + 1;
+      saveData();
+      renderTodos();
+      renderCalendar();
     });
   });
 
@@ -2884,6 +3012,7 @@ function makeInlineAddForm(catId) {
     <div class="inline-add-row">
       <select class="duration-select">
         <option value="">시간 없음</option>
+        <option value="5m">5m</option>
         <option value="15m">15m</option>
         <option value="30m">30m</option>
         <option value="1h">1h</option>
