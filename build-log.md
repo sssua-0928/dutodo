@@ -392,6 +392,52 @@ todomate 대체로 쓰다가 생긴 두 가지 불편함에서 시작.
 
 이번 작업은 유난히 대화 초반에 "예외 상황 / 더 고려할 지점"을 미리 열거하는 데 시간을 많이 썼다. 겹침 처리, 리사이즈가 바꾸는 값, 미정 할일, 자정 넘김, 시간 범위, 밀린 할일 — 이 중 사용자가 직접 결정한 항목은 모두 기록에 남기고 구현에 반영했다. 덕분에 중간에 "어? 이건 어떻게 하지?"로 멈추는 일 없이 단계별로 커밋할 수 있는 수준까지 정리됐다.
 
+### 푸시 과정의 마찰 — rebase 충돌 사냥
+
+구현을 마치고 커밋/푸시하려는데 연달아 세 번 막혔다.
+
+**1차: `git push` rejected (non-fast-forward)**
+- 리모트에 내가 모르는 커밋 3개가 있었음: "타임라인 체크, 서브카테고리 보이기 토글, 레이아웃 조정" / "타임라인 뷰, 할일 드래그 순서 변경" / "로고/파비콘 반영, 기한 만료 자동 처리, 카테고리 드래그 순서 변경"
+- 이전 세션에서 이미 구현하고 푸시했던 내용인데, 현재 세션은 예전 로컬 상태에서 시작해서 존재를 몰랐음
+- `git pull --rebase`로 시도
+
+**2차: rebase 도중 untracked file 충돌**
+```
+error: 체크아웃 때문에 추적하지 않는 다음 작업 폴더의 파일을 덮어씁니다:
+	dutodo_logo_v3.html
+```
+- 로컬에 `dutodo_logo_v3.html`이 untracked 상태로 있었는데, 리모트도 같은 파일을 커밋으로 들고 있음 → 덮어쓰기 방지
+- `diff <(git show origin/main:dutodo_logo_v3.html) dutodo_logo_v3.html` → 바이트 단위로 동일함 확인 → 로컬 파일 제거 후 재시도
+
+**3차: `todo-app.html` 병합 충돌**
+- 파일 4곳에 `<<<<<<<` 마커 발생
+- 원인 분석: 이번 세션을 시작했을 때 로컬 `todo-app.html`은 이미 "옛 커밋 + 미커밋된 Steps 14-17 작업" 상태였고, 그 위에 내 Step 18을 쌓음. 리모트에는 Steps 14-17이 이미 3개의 커밋으로 들어와 있었음. 즉 내 diff = "14-17 + 18", 리모트 = "14-17". 겹치는 구간에서 컨텍스트가 미세하게 달라 자동 병합이 실패
+- 처음엔 rebase를 그대로 진행하려 했는데, 단일 커밋에 섞여 있어서 "내 몫만" 분리하기 어려움 → 방향 전환:
+
+```bash
+git rebase --abort        # rebase 취소
+git reset --soft HEAD~1   # 내 커밋은 풀되 변경은 유지
+git stash push -u         # 모든 변경 stash (untracked 포함)
+git pull origin main      # 리모트 fast-forward로 깔끔히 받음
+git stash pop             # stash 되살리기 → 이때 진짜 충돌 발생
+```
+
+- stash pop 후 `todo-app.html`에만 충돌 마커 4곳:
+  1. Actual Time Toast CSS 블록 — 리모트 없음 vs 내 추가 → 내 쪽 채택
+  2. 타임테이블 관련 함수 전체(약 370줄) — 리모트 없음 vs 내 추가 → 내 쪽 채택
+  3. `durationStr` 생성 — 리모트는 `todo.duration` 참조, 내 쪽은 `estimatedTime`/`actualTime` 참조 → 내 쪽 채택 (데이터 모델 리네임 반영)
+  4. `renderTodos()` 내부 `applyViewMode()` 호출 + 타임테이블 분기 — 리모트 없음 vs 내 추가 → 내 쪽 채택
+
+**Note**: stash pop 시의 충돌 메시지에서 `Updated upstream`은 "리모트(pull 받은 버전)", `Stashed changes`는 "내가 stash에 넣었던 작업"을 의미. rebase 중 충돌의 `ours/theirs`와는 해석이 다르기 때문에 매번 헷갈림 주의.
+
+**검증**: 충돌 해결 직후 `new Function(scriptTag)`로 JS 문법 파싱. 4개 지점 모두 주변 문맥이 이어지는지 육안으로 확인.
+
+### 교훈
+- 세션 시작 시 `git fetch && git status` 한 번 돌려서 리모트와의 상태를 미리 확인하는 게 좋았다. 마지막에 충돌을 마주치는 것보다 처음에 "어, 리모트에 내가 모르는 커밋이 있네"로 시작하는 게 훨씬 마음이 편함.
+- Untracked 파일이 리모트 커밋과 이름이 겹칠 때는 내용 비교부터. 덮어쓰기는 데이터 손실 위험.
+- 충돌이 복잡해 보여도 막상 하나씩 열어보면 "한쪽은 추가, 다른 쪽은 변경 없음"인 경우가 많다. 마커 개수에 쫄지 말고 실제 내용을 보자.
+- rebase 중 충돌이 복잡하면 `--abort → reset --soft → stash → pull → stash pop` 패턴이 때때로 더 깔끔하다. 단일 "fresh" 위에 stash를 다시 얹는 셈이라 해결할 충돌 범위가 좁아짐.
+
 Closes #9
 
 ---
