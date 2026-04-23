@@ -2209,22 +2209,10 @@ function localizeDuration(val) {
 
 const DEFAULT_DATA = {
   categories: [
-    { id: 'cat-1', name: '취준', icon: '💰', color: '#FFB800', order: 0, parentId: null },
-    { id: 'cat-1-1', name: '펜타시큐리티', icon: null, color: null, order: 0, parentId: 'cat-1' },
-    { id: 'cat-1-2', name: '공통', icon: null, color: null, order: 1, parentId: 'cat-1' },
-    { id: 'cat-2', name: 'To-do', icon: '✨', color: '#7C7AEF', order: 1, parentId: null },
-    { id: 'cat-3', name: '데이터야놀자', icon: '📈', color: '#FF6B8A', order: 2, parentId: null }
+    { id: 'cat-1', name: 'To-do', icon: '✨', color: '#7C7AEF', order: 0, parentId: null },
+    { id: 'cat-1-1', name: '할일', icon: null, color: null, order: 0, parentId: 'cat-1' }
   ],
-  todos: [
-    { id: 'todo-1', categoryId: 'cat-1-1', text: '면접 준비', date: '2026-04-07', done: false, estimatedTime: null, actualTime: null, scheduledTime: null, order: 0, createdDate: '2026-04-07' },
-    { id: 'todo-2', categoryId: 'cat-1-1', text: '보안 기본지식 정리', date: '2026-04-07', done: false, estimatedTime: null, actualTime: null, scheduledTime: null, order: 1, createdDate: '2026-04-07' },
-    { id: 'todo-3', categoryId: 'cat-1-2', text: '취준스터디 경신스', date: '2026-04-07', done: false, estimatedTime: null, actualTime: null, scheduledTime: null, order: 0, createdDate: '2026-04-07' },
-    { id: 'todo-4', categoryId: 'cat-2', text: '세빈카공', date: '2026-04-07', done: false, estimatedTime: null, actualTime: null, scheduledTime: null, order: 0, createdDate: '2026-04-07' },
-    { id: 'todo-5', categoryId: 'cat-2', text: 'e4i2 계획 정리', date: '2026-04-07', done: false, estimatedTime: null, actualTime: null, scheduledTime: null, order: 1, createdDate: '2026-04-07' },
-    { id: 'todo-6', categoryId: 'cat-3', text: '플파트 회의 준비', date: '2026-04-07', done: false, estimatedTime: '15m', actualTime: null, scheduledTime: '18:00', order: 0, createdDate: '2026-04-07' },
-    { id: 'todo-7', categoryId: 'cat-3', text: '플파트 회의', date: '2026-04-07', done: false, estimatedTime: '1h', actualTime: null, scheduledTime: '21:30', order: 1, createdDate: '2026-04-07' },
-    { id: 'todo-8', categoryId: 'cat-3', text: '전체 회의', date: '2026-04-07', done: false, estimatedTime: '1h', actualTime: null, scheduledTime: null, order: 2, createdDate: '2026-04-07' }
-  ]
+  todos: []
 };
 
 // ─── State ────────────────────────────────────────────────
