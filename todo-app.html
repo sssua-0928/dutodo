@@ -312,6 +312,261 @@
     min-height: 0;
   }
 
+  /* ── Retro View ── */
+  #retro-view {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .retro-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .retro-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .retro-week-label {
+    font-size: 16px;
+    font-weight: 700;
+    min-width: 120px;
+    text-align: center;
+  }
+
+  .retro-nav-btn {
+    background: var(--bg);
+    border: none;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--text-sub);
+    transition: all 0.15s;
+  }
+
+  .retro-nav-btn:hover {
+    background: var(--border);
+    color: var(--text);
+  }
+
+  .retro-summary {
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+  }
+
+  .retro-summary-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-sub);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .retro-completion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .retro-pct {
+    font-size: 20px;
+    font-weight: 800;
+    color: #FFB800;
+  }
+
+  .retro-time-summary {
+    font-size: 13px;
+    color: var(--text-sub);
+    margin-top: 6px;
+  }
+
+  .retro-time-over { color: #FF3B30; font-weight: 600; }
+  .retro-time-under { color: #34C759; font-weight: 600; }
+
+  .retro-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .retro-cat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .retro-cat-card {
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    border-left: 4px solid #999;
+  }
+
+  .retro-cat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .retro-cat-name {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .retro-cat-count {
+    font-size: 13px;
+    color: var(--text-sub);
+    font-weight: 600;
+  }
+
+  .retro-cat-time {
+    font-size: 12px;
+    color: var(--text-sub);
+    margin-top: 4px;
+  }
+
+  .retro-cat-overrun {
+    font-size: 11px;
+    color: #FF3B30;
+    margin-top: 4px;
+  }
+
+  /* Daily breakdown */
+  .retro-daily-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .retro-day {
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  .retro-day-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    cursor: pointer;
+    user-select: none;
+    gap: 8px;
+    transition: background 0.15s;
+  }
+
+  .retro-day-header:hover {
+    background: var(--border);
+  }
+
+  .retro-day-label {
+    font-size: 14px;
+    font-weight: 600;
+    flex: 1;
+  }
+
+  .retro-day-count {
+    font-size: 12px;
+    color: var(--text-sub);
+    font-weight: 600;
+  }
+
+  .retro-day-count.all-done {
+    color: #34C759;
+  }
+
+  .retro-day-chevron {
+    font-size: 12px;
+    color: var(--text-muted);
+    transition: transform 0.2s;
+  }
+
+  .retro-day.collapsed .retro-day-chevron {
+    transform: rotate(-90deg);
+  }
+
+  .retro-day.collapsed .retro-day-body {
+    display: none;
+  }
+
+  .retro-day-body {
+    padding: 0 14px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .retro-todo-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    padding: 4px 0;
+    flex-wrap: wrap;
+  }
+
+  .retro-todo-check { font-size: 14px; flex-shrink: 0; }
+  .retro-todo-icon { font-size: 12px; flex-shrink: 0; }
+  .retro-todo-time { font-size: 11px; color: var(--text-sub); flex-shrink: 0; }
+  .retro-todo-text { flex: 1; min-width: 0; }
+  .retro-todo-undone .retro-todo-text { color: var(--text-sub); }
+
+  .retro-dur-badge {
+    font-size: 11px;
+    color: var(--text-sub);
+    background: var(--card);
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  /* Insights */
+  .retro-insights {
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .retro-insight-item {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  /* Empty state */
+  .retro-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-sub);
+    font-size: 14px;
+  }
+
+  .retro-empty-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+  }
+
   .tt-scroll {
     flex: 1;
     overflow-y: auto;
@@ -1602,9 +1857,101 @@
     .app { flex-direction: column; height: auto; min-height: 100vh; padding: 12px; }
     .panel-left { width: 100%; }
   }
+
+  /* ── Login Modal ── */
+  .login-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.3);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 48px 40px;
+    text-align: center;
+    max-width: 380px;
+    width: 90%;
+  }
+  .login-card h1 { font-size: 28px; margin-bottom: 8px; }
+  .login-card h1 span { color: #FFB800; }
+  .login-card p { color: var(--text-sub); margin-bottom: 32px; font-size: 14px; }
+  .login-btn-google {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 12px 28px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    font-size: 15px; font-weight: 600;
+    cursor: pointer;
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .login-btn-google:hover {
+    border-color: #FFB800;
+    box-shadow: 0 2px 8px rgba(255,184,0,0.2);
+  }
+  .login-btn-google svg { flex-shrink: 0; }
+
+  /* ── User Menu (logout) ── */
+  .user-menu {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 12px;
+    font-size: 13px; color: var(--text-sub);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s;
+  }
+  .user-menu:hover { background: var(--bg); }
+  .user-avatar {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #FFB800; color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+  }
+
+  /* ── Loading Spinner ── */
+  .loading-overlay {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 9998;
+  }
+  .loading-overlay.hidden { display: none; }
+  .loading-spinner {
+    width: 40px; height: 40px;
+    border: 4px solid var(--border);
+    border-top-color: #FFB800;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-overlay p { margin-top: 16px; color: var(--text-sub); font-size: 14px; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-spinner"></div>
+  <p>dutodo 로딩 중...</p>
+</div>
+
+<!-- Login Modal -->
+<div class="login-overlay hidden" id="login-overlay">
+  <div class="login-card">
+    <h1><span>du</span>todo</h1>
+    <p>do it, dudu! 오늘 할 일, 그냥 해버리자</p>
+    <button class="login-btn-google" id="btn-google-login">
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Google로 시작하기
+    </button>
+  </div>
+</div>
+
 <div class="app">
   <div class="panel-left">
     <div class="app-logo">
@@ -1626,6 +1973,10 @@
       <div class="app-logo-text">
         <span class="app-logo-name"><span style="color:#FFB800">du</span>todo</span>
         <span class="app-logo-slogan">do it, dudu!</span>
+      </div>
+      <div class="user-menu hidden" id="user-menu" onclick="handleLogout()" title="로그아웃">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <span id="user-name"></span>
       </div>
     </div>
     <div class="card" id="calendar-card">
@@ -1666,6 +2017,7 @@
       <div class="view-toggle" id="view-toggle">
         <button class="vt-btn active" data-view="list">📋 리스트</button>
         <button class="vt-btn" data-view="timetable">📅 타임테이블</button>
+        <button class="vt-btn" data-view="retro">📊 회고</button>
       </div>
     </div>
     <div id="list-view">
@@ -1673,6 +2025,7 @@
       <button class="add-cat-btn" id="add-cat-btn">＋ 카테고리 추가</button>
     </div>
     <div id="timetable-view" style="display:none;"></div>
+    <div id="retro-view" style="display:none;"></div>
   </div>
 </div>
 
@@ -1757,6 +2110,77 @@
 </div>
 
 <script>
+// ─── Supabase Auth ────────────────────────────────────────
+const SUPABASE_URL = '__SUPABASE_URL__';
+const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
+
+let supabaseClient = null;
+let currentSession = null;
+
+// 서버에서 실제 값을 주입하지 않은 경우(로컬 개발) 인증 스킵
+const isAuthEnabled = !SUPABASE_URL.startsWith('__');
+
+if (isAuthEnabled) {
+  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+function showLogin() {
+  document.getElementById('login-overlay').classList.remove('hidden');
+  document.getElementById('loading-overlay').classList.add('hidden');
+  document.querySelector('.app').style.display = 'none';
+}
+
+function hideLogin() {
+  document.getElementById('login-overlay').classList.add('hidden');
+  document.getElementById('loading-overlay').classList.add('hidden');
+  document.querySelector('.app').style.display = '';
+}
+
+function updateUserUI(user) {
+  const menu = document.getElementById('user-menu');
+  const avatar = document.getElementById('user-avatar');
+  const nameEl = document.getElementById('user-name');
+  if (user) {
+    const name = user.user_metadata?.full_name || user.email?.split('@')[0] || '?';
+    avatar.textContent = name.charAt(0).toUpperCase();
+    if (user.user_metadata?.avatar_url) {
+      avatar.innerHTML = '<img src="' + user.user_metadata.avatar_url + '" style="width:24px;height:24px;border-radius:50%">';
+    }
+    nameEl.textContent = name;
+    menu.classList.remove('hidden');
+  } else {
+    menu.classList.add('hidden');
+  }
+}
+
+async function handleGoogleLogin() {
+  if (!supabaseClient) return;
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin }
+  });
+  if (error) console.error('Login error:', error);
+}
+
+async function handleLogout() {
+  if (!supabaseClient) return;
+  await supabaseClient.auth.signOut();
+  currentSession = null;
+  showLogin();
+  updateUserUI(null);
+}
+
+// Google 로그인 버튼 이벤트
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('btn-google-login');
+  if (btn) btn.addEventListener('click', handleGoogleLogin);
+});
+
+function getAuthHeaders() {
+  if (!currentSession) return {};
+  return { 'Authorization': 'Bearer ' + currentSession.access_token };
+}
+
 // ─── Constants ────────────────────────────────────────────
 const STORAGE_KEY = 'todoApp';
 const DAYS = ['일','월','화','수','목','금','토'];
@@ -1811,15 +2235,36 @@ let ctxTodoId = null;
 let ctxSubcatId = null;
 let editingCatId = null;
 let useApi = false;
-let currentView = localStorage.getItem('todoApp_view') || 'list'; // 'list' | 'timetable'
+let currentView = localStorage.getItem('todoApp_view') || 'list'; // 'list' | 'timetable' | 'retro'
 let ttScrollTop = null; // 타임테이블 스크롤 위치 유지
 let ttInitialScrollDone = false;
 
 // ─── Storage ──────────────────────────────────────────────
+function migrateData(d) {
+  let migrated = false;
+  d.categories.forEach(c => {
+    if (c.parentId === undefined) { c.parentId = null; migrated = true; }
+    if (c.archived === undefined) { c.archived = false; migrated = true; }
+  });
+  d.todos.forEach(t => {
+    if (!t.createdDate) { t.createdDate = t.date; migrated = true; }
+    if (t.duration !== undefined) {
+      if (t.estimatedTime === undefined) t.estimatedTime = t.duration;
+      delete t.duration;
+      migrated = true;
+    }
+    if (t.estimatedTime === undefined) { t.estimatedTime = null; migrated = true; }
+    if (t.actualTime === undefined) { t.actualTime = null; migrated = true; }
+  });
+  return migrated;
+}
+
 async function loadData() {
-  const apiUrl = 'http://localhost:8080';
   try {
-    const res = await fetch(apiUrl + '/api/data');
+    const res = await fetch('/api/data', {
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }
+    });
+    if (res.status === 401) throw new Error('Unauthorized');
     if (!res.ok) throw new Error('API error');
     const json = await res.json();
     useApi = true;
@@ -1828,28 +2273,7 @@ async function loadData() {
       await saveDataAsync();
     } else {
       data = json;
-      let migrated = false;
-      data.categories.forEach(c => {
-        if (c.parentId === undefined) { c.parentId = null; migrated = true; }
-      });
-      // Migrate: add createdDate if missing
-      data.todos.forEach(t => {
-        if (!t.createdDate) { t.createdDate = t.date; migrated = true; }
-      });
-      data.categories.forEach(c => {
-        if (c.archived === undefined) { c.archived = false; migrated = true; }
-      });
-      // Migrate: duration → estimatedTime, add actualTime
-      data.todos.forEach(t => {
-        if (t.duration !== undefined) {
-          if (t.estimatedTime === undefined) t.estimatedTime = t.duration;
-          delete t.duration;
-          migrated = true;
-        }
-        if (t.estimatedTime === undefined) { t.estimatedTime = null; migrated = true; }
-        if (t.actualTime === undefined) { t.actualTime = null; migrated = true; }
-      });
-      if (migrated) saveData();
+      if (migrateData(data)) saveData();
     }
   } catch (e) {
     console.warn('API unavailable, using localStorage:', e.message);
@@ -1860,30 +2284,18 @@ async function loadData() {
       saveData();
     } else {
       data = JSON.parse(raw);
-      data.categories.forEach(c => {
-        if (c.parentId === undefined) c.parentId = null;
-        if (c.archived === undefined) c.archived = false;
-      });
-      data.todos.forEach(t => {
-        if (t.duration !== undefined) {
-          if (t.estimatedTime === undefined) t.estimatedTime = t.duration;
-          delete t.duration;
-        }
-        if (t.estimatedTime === undefined) t.estimatedTime = null;
-        if (t.actualTime === undefined) t.actualTime = null;
-        if (!t.createdDate) t.createdDate = t.date;
-      });
+      migrateData(data);
     }
   }
 }
 
 function saveData() {
   if (useApi) {
-    fetch('http://localhost:8080/api/data', {
+    fetch('/api/data', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(data)
-    }).then(() => console.log('Saved to file')).catch(e => console.warn('Save failed:', e));
+    }).then(() => console.log('Saved to server')).catch(e => console.warn('Save failed:', e));
   }
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
 }
@@ -1891,12 +2303,12 @@ function saveData() {
 async function saveDataAsync() {
   if (useApi) {
     try {
-      await fetch('http://localhost:8080/api/data', {
+      await fetch('/api/data', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         body: JSON.stringify(data)
       });
-      console.log('Saved to file (async)');
+      console.log('Saved to server (async)');
     } catch(e) { console.warn('Async save failed:', e); }
   }
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
@@ -2163,14 +2575,11 @@ function renderStats() {
 function applyViewMode() {
   const listEl = document.getElementById('list-view');
   const ttEl = document.getElementById('timetable-view');
+  const retroEl = document.getElementById('retro-view');
   const btns = document.querySelectorAll('.vt-btn');
-  if (currentView === 'timetable') {
-    listEl.style.display = 'none';
-    ttEl.style.display = 'flex';
-  } else {
-    listEl.style.display = 'flex';
-    ttEl.style.display = 'none';
-  }
+  listEl.style.display = currentView === 'list' ? 'flex' : 'none';
+  ttEl.style.display = currentView === 'timetable' ? 'flex' : 'none';
+  retroEl.style.display = currentView === 'retro' ? 'flex' : 'none';
   btns.forEach(b => b.classList.toggle('active', b.dataset.view === currentView));
 }
 
@@ -2638,6 +3047,270 @@ function renderTimeline() {
   });
 }
 
+// ─── Weekly Retrospective ────────────────────────────────
+function getWeekRange(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.getDay(); // 0=Sun
+  const diffToMon = day === 0 ? -6 : 1 - day;
+  const mon = new Date(d);
+  mon.setDate(d.getDate() + diffToMon);
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const dd = new Date(mon);
+    dd.setDate(mon.getDate() + i);
+    days.push(toDateStr(dd.getFullYear(), dd.getMonth(), dd.getDate()));
+  }
+  return {
+    weekStart: days[0],
+    weekEnd: days[6],
+    days,
+    weekLabel: `${mon.getMonth()+1}/${mon.getDate()} ~ ${new Date(mon.getTime() + 6*86400000).getMonth()+1}/${new Date(mon.getTime() + 6*86400000).getDate()}`
+  };
+}
+
+function getWeekTodos(weekRange) {
+  return data.todos.filter(t => t.date >= weekRange.weekStart && t.date <= weekRange.weekEnd);
+}
+
+function getCategoryInfo(categoryId) {
+  const cat = data.categories.find(c => c.id === categoryId);
+  if (!cat) return { name: '기타', icon: '', color: '#999', parentId: null };
+  if (cat.parentId) {
+    const parent = data.categories.find(c => c.id === cat.parentId);
+    return { name: cat.name, icon: parent?.icon || '', color: parent?.color || '#999', parentId: cat.parentId, parentName: parent?.name || '' };
+  }
+  return { name: cat.name, icon: cat.icon || '', color: cat.color || '#999', parentId: null };
+}
+
+function getParentCategoryForTodo(todo) {
+  const cat = data.categories.find(c => c.id === todo.categoryId);
+  if (!cat) return null;
+  if (cat.parentId) return data.categories.find(c => c.id === cat.parentId);
+  return cat;
+}
+
+function renderRetroView() {
+  const container = document.getElementById('retro-view');
+  const week = getWeekRange(selectedDate);
+  const weekTodos = getWeekTodos(week);
+
+  if (weekTodos.length === 0) {
+    container.innerHTML = `
+      <div class="retro-content">
+        <div class="retro-header">
+          <button class="retro-nav-btn" onclick="retroNavWeek(-1)">◀</button>
+          <span class="retro-week-label">${week.weekLabel}</span>
+          <button class="retro-nav-btn" onclick="retroNavWeek(1)">▶</button>
+        </div>
+        <div class="retro-empty">
+          <div class="retro-empty-icon">📭</div>
+          <div>이 주에는 기록이 없습니다</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const done = weekTodos.filter(t => t.done).length;
+  const total = weekTodos.length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  // Time aggregation
+  let totalEst = 0, totalAct = 0, estCount = 0;
+  weekTodos.forEach(t => {
+    if (t.estimatedTime) { totalEst += parseDuration(t.estimatedTime); estCount++; }
+    if (t.actualTime) totalAct += parseDuration(t.actualTime);
+  });
+
+  // Category summary
+  const catMap = new Map();
+  weekTodos.forEach(t => {
+    const parent = getParentCategoryForTodo(t);
+    if (!parent) return;
+    if (!catMap.has(parent.id)) {
+      catMap.set(parent.id, { cat: parent, todos: [], done: 0, total: 0, est: 0, act: 0, maxOverrun: null, maxOverrunMin: 0 });
+    }
+    const entry = catMap.get(parent.id);
+    entry.todos.push(t);
+    entry.total++;
+    if (t.done) entry.done++;
+    if (t.estimatedTime) entry.est += parseDuration(t.estimatedTime);
+    if (t.actualTime) entry.act += parseDuration(t.actualTime);
+    // Track biggest overrun
+    if (t.estimatedTime && t.actualTime) {
+      const diff = parseDuration(t.actualTime) - parseDuration(t.estimatedTime);
+      if (diff > entry.maxOverrunMin) {
+        entry.maxOverrunMin = diff;
+        entry.maxOverrun = t;
+      }
+    }
+  });
+
+  // Sort categories by total todos descending
+  const catEntries = [...catMap.values()].sort((a, b) => b.total - a.total);
+
+  // Build category summary HTML
+  let catHtml = '';
+  catEntries.forEach(({ cat, done: d, total: t, est, act, maxOverrun, maxOverrunMin }) => {
+    const catPct = t > 0 ? Math.round((d / t) * 100) : 0;
+    const timeDelta = act - est;
+    const deltaClass = timeDelta > 0 ? 'retro-time-over' : timeDelta < 0 ? 'retro-time-under' : '';
+    const timeHtml = (est > 0 || act > 0) ? `
+      <div class="retro-cat-time">
+        ${est > 0 ? `예상 ${formatDuration(est)}` : ''}${est > 0 && act > 0 ? ' → ' : ''}${act > 0 ? `실제 ${formatDuration(act)}` : ''}
+        ${(est > 0 && act > 0) ? `<span class="${deltaClass}">(${formatDurationSigned(timeDelta)})</span>` : ''}
+      </div>` : '';
+    const overrunHtml = (maxOverrun && maxOverrunMin > 15) ? `
+      <div class="retro-cat-overrun">⚠️ ${escHtml(maxOverrun.text)} (${maxOverrun.estimatedTime} → ${maxOverrun.actualTime})</div>` : '';
+
+    catHtml += `
+      <div class="retro-cat-card" style="border-left-color: ${cat.color || '#999'}">
+        <div class="retro-cat-header">
+          <span class="retro-cat-name">${cat.icon || ''} ${escHtml(cat.name)}</span>
+          <span class="retro-cat-count">${d}/${t} (${catPct}%)</span>
+        </div>
+        ${timeHtml}
+        ${overrunHtml}
+      </div>`;
+  });
+
+  // Build daily breakdown HTML
+  const DAYS_SHORT = ['일', '월', '화', '수', '목', '금', '토'];
+  let dailyHtml = '';
+  week.days.forEach(dateStr => {
+    const dayTodos = weekTodos.filter(t => t.date === dateStr);
+    if (dayTodos.length === 0) return;
+    const { m, d, dow } = formatDisplayDate(dateStr);
+    const dayDone = dayTodos.filter(t => t.done).length;
+    const dayTotal = dayTodos.length;
+
+    // Group by parent category
+    const dayCatMap = new Map();
+    dayTodos.forEach(t => {
+      const parent = getParentCategoryForTodo(t);
+      const key = parent ? parent.id : '_none';
+      if (!dayCatMap.has(key)) dayCatMap.set(key, { cat: parent, todos: [] });
+      dayCatMap.get(key).todos.push(t);
+    });
+
+    let todosHtml = '';
+    dayCatMap.forEach(({ cat, todos }) => {
+      todos.sort((a, b) => (a.scheduledTime || '99:99').localeCompare(b.scheduledTime || '99:99'));
+      todos.forEach(t => {
+        const icon = cat?.icon || '';
+        const doneClass = t.done ? 'retro-todo-done' : 'retro-todo-undone';
+        const check = t.done ? '✅' : '⬜';
+        const timeStr = t.scheduledTime ? `<span class="retro-todo-time">${formatTime(t.scheduledTime)}</span>` : '';
+        const durBadge = renderRetroDurationBadge(t);
+        todosHtml += `
+          <div class="retro-todo-item ${doneClass}">
+            <span class="retro-todo-check">${check}</span>
+            <span class="retro-todo-icon">${icon}</span>
+            ${timeStr}
+            <span class="retro-todo-text">${escHtml(t.text)}</span>
+            ${durBadge}
+          </div>`;
+      });
+    });
+
+    dailyHtml += `
+      <div class="retro-day">
+        <div class="retro-day-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span class="retro-day-label">${m}/${d} (${DAYS_SHORT[dow]})</span>
+          <span class="retro-day-count ${dayDone === dayTotal ? 'all-done' : ''}">${dayDone === dayTotal ? '✨ ' : ''}${dayDone}/${dayTotal}</span>
+          <span class="retro-day-chevron">▾</span>
+        </div>
+        <div class="retro-day-body">${todosHtml}</div>
+      </div>`;
+  });
+
+  // Insights
+  let insightHtml = '';
+  // Busiest day
+  const dayCountMap = {};
+  week.days.forEach(d => { dayCountMap[d] = weekTodos.filter(t => t.date === d).length; });
+  const busiestDay = Object.entries(dayCountMap).sort((a, b) => b[1] - a[1])[0];
+  if (busiestDay && busiestDay[1] > 0) {
+    const bd = formatDisplayDate(busiestDay[0]);
+    insightHtml += `<div class="retro-insight-item">📅 가장 바빴던 날: <strong>${bd.m}/${bd.d} (${DAYS_SHORT[bd.dow]})</strong> — ${busiestDay[1]}개</div>`;
+  }
+  // Most active category
+  if (catEntries.length > 0) {
+    const top = catEntries[0];
+    insightHtml += `<div class="retro-insight-item">${top.cat.icon || '📁'} 가장 활발한 카테고리: <strong>${escHtml(top.cat.name)}</strong> — ${top.total}개</div>`;
+  }
+  // Time accuracy
+  if (estCount > 0 && totalAct > 0) {
+    const accuracy = Math.round((1 - Math.abs(totalAct - totalEst) / totalEst) * 100);
+    insightHtml += `<div class="retro-insight-item">⏱ 시간 예측 정확도: <strong>${Math.max(0, accuracy)}%</strong></div>`;
+  }
+  // Undone items
+  const undone = weekTodos.filter(t => !t.done);
+  if (undone.length > 0) {
+    insightHtml += `<div class="retro-insight-item">📌 미완료: <strong>${undone.length}개</strong></div>`;
+  }
+
+  // Time summary
+  const timeDelta = totalAct - totalEst;
+  const timeDeltaClass = timeDelta > 0 ? 'retro-time-over' : timeDelta < 0 ? 'retro-time-under' : '';
+  const timeSummaryHtml = (totalEst > 0 || totalAct > 0) ? `
+    <div class="retro-time-summary">
+      ${totalEst > 0 ? `예상 ${formatDuration(totalEst)}` : ''}${totalEst > 0 && totalAct > 0 ? ' → ' : ''}${totalAct > 0 ? `실제 ${formatDuration(totalAct)}` : ''}
+      ${(totalEst > 0 && totalAct > 0) ? `<span class="${timeDeltaClass}">(${formatDurationSigned(timeDelta)})</span>` : ''}
+    </div>` : '';
+
+  container.innerHTML = `
+    <div class="retro-content">
+      <div class="retro-header">
+        <button class="retro-nav-btn" onclick="retroNavWeek(-1)">◀</button>
+        <span class="retro-week-label">${week.weekLabel}</span>
+        <button class="retro-nav-btn" onclick="retroNavWeek(1)">▶</button>
+      </div>
+      <div class="retro-summary">
+        <div class="retro-summary-title">주간 요약</div>
+        <div class="retro-completion">
+          <span>완료 ${done}/${total}</span>
+          <span class="retro-pct">${pct}%</span>
+        </div>
+        <div class="progress-bar-wrap" style="margin: 8px 0;">
+          <div class="progress-bar-fill" style="width:${pct}%; background: ${pct === 100 ? '#34C759' : '#FFB800'};"></div>
+        </div>
+        ${timeSummaryHtml}
+      </div>
+      ${catEntries.length > 0 ? `
+        <div class="retro-section-title">카테고리별 요약</div>
+        <div class="retro-cat-list">${catHtml}</div>
+      ` : ''}
+      <div class="retro-section-title">일별 기록</div>
+      <div class="retro-daily-list">${dailyHtml}</div>
+      ${insightHtml ? `
+        <div class="retro-section-title">인사이트</div>
+        <div class="retro-insights">${insightHtml}</div>
+      ` : ''}
+    </div>`;
+}
+
+function renderRetroDurationBadge(todo) {
+  const est = todo.estimatedTime;
+  const act = todo.actualTime;
+  if (!est && !act) return '';
+  const estMin = parseDuration(est);
+  const actMin = parseDuration(act);
+  if (est && act) {
+    const diff = actMin - estMin;
+    const cls = diff > 0 ? 'retro-time-over' : diff < 0 ? 'retro-time-under' : '';
+    return `<span class="retro-dur-badge">${est} → ${act} <span class="${cls}">(${formatDurationSigned(diff)})</span></span>`;
+  }
+  return `<span class="retro-dur-badge">⏱ ${est || act}</span>`;
+}
+
+function retroNavWeek(delta) {
+  const d = new Date(selectedDate + 'T00:00:00');
+  d.setDate(d.getDate() + delta * 7);
+  selectedDate = toDateStr(d.getFullYear(), d.getMonth(), d.getDate());
+  renderCalendar();
+  renderTodos();
+}
+
 // ─── Todos ────────────────────────────────────────────────
 function getTodosForDate(dateStr) {
   return data.todos.filter(t => t.date === dateStr);
@@ -2651,6 +3324,10 @@ function renderTodos() {
 
   if (currentView === 'timetable') {
     renderTimetable();
+  }
+
+  if (currentView === 'retro') {
+    renderRetroView();
   }
 
   const area = document.getElementById('todo-area');
@@ -3669,17 +4346,51 @@ function escHtml(str) {
 }
 
 // ─── Init ─────────────────────────────────────────────────
+async function initApp() {
+  await loadData();
+  console.log('loadData OK, useApi:', useApi, 'categories:', data.categories.length);
+  initCalendar();
+  renderCalendar();
+  renderTodos();
+  wireTimetableGridDrop();
+  hideLogin();
+  console.log('Init complete');
+}
+
 (async () => {
   try {
-    await loadData();
-    console.log('loadData OK, useApi:', useApi, 'categories:', data.categories.length);
-    initCalendar();
-    renderCalendar();
-    renderTodos();
-    wireTimetableGridDrop();
-    console.log('Init complete');
+    if (!isAuthEnabled) {
+      // 로컬 개발 모드 (Supabase 미설정)
+      document.getElementById('loading-overlay').classList.add('hidden');
+      await initApp();
+      return;
+    }
+
+    // 세션 확인
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+      currentSession = session;
+      updateUserUI(session.user);
+      await initApp();
+    } else {
+      showLogin();
+    }
+
+    // 인증 상태 변경 리스너
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth event:', event);
+      currentSession = session;
+      if (event === 'SIGNED_IN' && session) {
+        updateUserUI(session.user);
+        await initApp();
+      } else if (event === 'SIGNED_OUT') {
+        showLogin();
+        updateUserUI(null);
+      }
+    });
   } catch(e) {
     console.error('Init error:', e);
+    document.getElementById('loading-overlay').classList.add('hidden');
   }
 })();
 </script>

@@ -4,6 +4,7 @@ todo-data.json
 # 환경변수 / 키
 .env
 .env.*
+!.env.example
 *.key
 *.pem
 

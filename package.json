@@ -1,0 +1,17 @@
+{
+  "name": "dutodo",
+  "version": "1.0.0",
+  "description": "dutodo - 시간 조율 어시스턴트",
+  "main": "todo-server.js",
+  "scripts": {
+    "start": "node todo-server.js",
+    "migrate": "node migrate-data.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.0",
+    "dotenv": "^16.4.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

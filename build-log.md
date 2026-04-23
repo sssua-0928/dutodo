@@ -511,3 +511,60 @@ node todo-server.js
 | 이후 기능들 | 직접 수정 | 드래그앤드롭, 내일하기, D+N, 아카이브 등 |
 
 전체 과정은 하나의 Claude Code 대화 안에서 이루어졌다. 기획 → 구현 → 버그 → QA → 추가 기능이 자연스럽게 이어지면서, "쓰면서 만드는" 개발이 가능했다.
+
+---
+
+## Step 18: 클라우드 배포 — 다른 사람들과 함께 쓸 수 있게 (2026-04-23)
+
+로컬에서만 쓰던 dutodo를 다른 사람들도 쓸 수 있도록 서버/DB를 구축했다.
+
+### 기술 선택
+
+| 구성 | 선택 | 이유 |
+|------|------|------|
+| DB + Auth | **Supabase** (PostgreSQL + Google OAuth) | Auth와 DB를 한 곳에서 해결. 무료 500MB + 50K MAU |
+| 서버 호스팅 | **Render** | Node.js 그대로 배포, GitHub push 자동 배포. 무료 750시간/월 |
+| 프론트엔드 | Render에서 같이 서빙 | 별도 호스팅 불필요 |
+
+비용: **$0** (전부 무료 티어)
+
+### 핵심 설계 결정
+
+**1. JSONB로 기존 구조 보존**
+현재 API가 `{categories, todos}` 전체를 GET/POST하는 구조라서, DB 테이블을 정규화하면 API를 전면 수정해야 했다. 대신 PostgreSQL의 JSONB 컬럼에 데이터를 통째로 저장하는 방식을 선택했다.
+
+```sql
+CREATE TABLE user_data (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id),
+  data JSONB NOT NULL DEFAULT '{"categories":[],"todos":[]}',
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+이렇게 하면 프론트엔드 코드 변경을 최소화할 수 있다. 나중에 사용자가 늘어서 성능이 필요하면 그때 정규화하면 된다.
+
+**2. 서버에서 Supabase 키 주입**
+프론트엔드 HTML에 `__SUPABASE_URL__`, `__SUPABASE_ANON_KEY__` 플레이스홀더를 넣고, 서버에서 HTML 서빙 시 환경변수 값으로 치환한다. `.env`가 없으면(로컬 개발) 인증 자체를 스킵해서 기존처럼 동작한다.
+
+**3. 프론트엔드 변경 최소화**
+- 로그인 모달 + Google 로그인 버튼 추가
+- `loadData()`, `saveData()`, `saveDataAsync()` 3개 함수만 수정 (localhost:8080 → 상대경로 + Authorization 헤더)
+- 마이그레이션 로직을 `migrateData()` 헬퍼로 추출해서 중복 제거
+
+### 파일 변경
+
+| 파일 | 변경 |
+|------|------|
+| `package.json` | 신규 — `@supabase/supabase-js`, `dotenv` |
+| `todo-server.js` | 전면 수정 — Supabase DB + JWT 검증 |
+| `todo-app.html` | 로그인 UI + Auth 코드 + fetch 수정 |
+| `migrate-data.js` | 신규 — 로컬 데이터 → DB 이관 (1회성) |
+| `.env.example` | 신규 — 환경변수 목록 |
+
+### 에이전트 활용
+
+| 단계 | 에이전트 | 설명 |
+|------|---------|------|
+| 탐색 | Explore | 기존 코드 구조, 데이터 모델, API 전체 파악 |
+| 설계 | Plan | 무료 호스팅 옵션 비교, 기술 스택 선정 |
+| 구현 | 직접 수정 | 서버/프론트/마이그레이션 코드 |
