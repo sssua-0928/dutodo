@@ -561,6 +561,62 @@ CREATE TABLE user_data (
 | `migrate-data.js` | 신규 — 로컬 데이터 → DB 이관 (1회성) |
 | `.env.example` | 신규 — 환경변수 목록 |
 
+### Supabase 프로젝트 세팅 가이드
+
+#### 1. 프로젝트 생성
+
+supabase.com > New Project에서:
+
+| 항목 | 설정 |
+|------|------|
+| Project name | `dutodo` |
+| Database password | `Generate a password` 클릭 (메모 필수) |
+| Region | `Asia-Pacific` (한국에서 가장 가까운 리전) |
+
+**Security 옵션 3가지:**
+
+| 옵션 | 체크 | 설명 |
+|------|------|------|
+| **Enable Data API** | ✅ | DB 테이블에 대한 REST API 자동 생성. 프론트에서 DB 접근하려면 필수 |
+| **Automatically expose new tables** | ✅ | 새 테이블 만들면 자동으로 API에 노출. 테이블 1개뿐이라 켜둬도 OK |
+| **Enable automatic RLS** | ✅ | Row Level Security 자동 활성화. **핵심 보안** — 이게 없으면 누구든 다른 사람 데이터 열람 가능. 사용자별 데이터 분리가 이걸로 동작 |
+
+> RLS(Row Level Security)란? 테이블에 "이 행은 이 사용자만 접근 가능" 같은 규칙을 거는 PostgreSQL 기능. Supabase에서는 `auth.uid()` 함수로 현재 로그인한 사용자 ID를 가져와서 본인 데이터만 보이게 한다.
+
+#### 2. 테이블 생성
+
+프로젝트 생성 후 SQL Editor에서 실행:
+
+```sql
+CREATE TABLE user_data (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  data JSONB NOT NULL DEFAULT '{"categories":[],"todos":[]}',
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- RLS 정책: 본인 데이터만 접근 가능
+CREATE POLICY "Users can only access own data"
+  ON user_data FOR ALL
+  USING (auth.uid() = user_id);
+```
+
+#### 3. Google OAuth 설정
+
+**Supabase 측:**
+- Authentication > Providers > Google 활성화
+- GCP에서 받은 Client ID / Client Secret 입력
+
+**GCP Console 측:**
+- APIs & Services > Credentials > OAuth 2.0 Client ID 생성
+- Authorized redirect URI: `https://<project-ref>.supabase.co/auth/v1/callback`
+
+#### 4. API 키 확인
+
+Settings > API에서 3개 값을 `.env`에 복사:
+- `SUPABASE_URL`: Project URL
+- `SUPABASE_ANON_KEY`: anon/public key (프론트엔드용)
+- `SUPABASE_SERVICE_KEY`: service_role key (서버 전용, 절대 노출 금지)
+
 ### 에이전트 활용
 
 | 단계 | 에이전트 | 설명 |
